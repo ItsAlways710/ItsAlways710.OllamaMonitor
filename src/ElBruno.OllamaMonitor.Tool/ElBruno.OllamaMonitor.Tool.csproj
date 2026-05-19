@@ -23,7 +23,7 @@
     <RepositoryUrl>https://github.com/elbruno/ElBruno.OllamaMonitor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <Version>0.7.0</Version>
+    <Version>0.8.1</Version>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
