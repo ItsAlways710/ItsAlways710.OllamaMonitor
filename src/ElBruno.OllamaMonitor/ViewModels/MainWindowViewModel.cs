@@ -1,8 +1,9 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using ElBruno.OllamaMonitor.Configuration;
 using ElBruno.OllamaMonitor.Diagnostics;
 using ElBruno.OllamaMonitor.Helpers;
 using ElBruno.OllamaMonitor.Models;
+using ElBruno.OllamaMonitor.Ollama;
 using ElBruno.OllamaMonitor.Services;
 
 namespace ElBruno.OllamaMonitor.ViewModels;
@@ -39,6 +40,11 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _modelsSummaryText = "No loaded models.";
     private string _primaryModelText = "Model: No loaded models";
     private string _compactModelsText = "Models: No loaded models";
+    private string _pullModelName = string.Empty;
+    private string _removeModelName = string.Empty;
+    private string _copySourceModelName = string.Empty;
+    private string _copyTargetModelName = string.Empty;
+    private OllamaModelSnapshot? _selectedModel;
     private string? _errorText;
 
     public MainWindowViewModel(
@@ -66,6 +72,19 @@ public sealed class MainWindowViewModel : ViewModelBase
         UnloadAllModelsCommand = new AsyncRelayCommand(
             () => UnloadAllModelsAsync(CancellationToken.None),
             () => Models.Count > 0);
+        StopSelectedModelCommand = new AsyncRelayCommand(
+            () => StopSelectedModelAsync(CancellationToken.None),
+            () => SelectedModel is not null);
+        PullModelCommand = new AsyncRelayCommand(
+            () => PullModelAsync(CancellationToken.None),
+            () => !string.IsNullOrWhiteSpace(PullModelName));
+        RemoveModelCommand = new AsyncRelayCommand(
+            () => RemoveModelAsync(CancellationToken.None),
+            () => !string.IsNullOrWhiteSpace(RemoveModelName));
+        CopyModelCommand = new AsyncRelayCommand(
+            () => CopyModelAsync(CancellationToken.None),
+            () => !string.IsNullOrWhiteSpace(CopySourceModelName) && !string.IsNullOrWhiteSpace(CopyTargetModelName));
+        StartOllamaCommand = new AsyncRelayCommand(() => StartOllamaAsync(CancellationToken.None));
     }
 
     public event EventHandler<OllamaMonitorSnapshot>? SnapshotUpdated;
@@ -73,16 +92,16 @@ public sealed class MainWindowViewModel : ViewModelBase
     public ObservableCollection<OllamaModelSnapshot> Models { get; }
 
     public AsyncRelayCommand RefreshCommand { get; }
-
     public RelayCommand CopyStatusCommand { get; }
-
     public RelayCommand OpenEndpointCommand { get; }
-
     public AsyncRelayCommand OpenSettingsCommand { get; }
-
     public RelayCommand HideWindowCommand { get; }
-
     public AsyncRelayCommand UnloadAllModelsCommand { get; }
+    public AsyncRelayCommand StopSelectedModelCommand { get; }
+    public AsyncRelayCommand PullModelCommand { get; }
+    public AsyncRelayCommand RemoveModelCommand { get; }
+    public AsyncRelayCommand CopyModelCommand { get; }
+    public AsyncRelayCommand StartOllamaCommand { get; }
 
     public string StateText
     {
@@ -192,6 +211,66 @@ public sealed class MainWindowViewModel : ViewModelBase
         private set => SetProperty(ref _compactModelsText, value);
     }
 
+    public string PullModelName
+    {
+        get => _pullModelName;
+        set
+        {
+            if (SetProperty(ref _pullModelName, value))
+            {
+                PullModelCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string RemoveModelName
+    {
+        get => _removeModelName;
+        set
+        {
+            if (SetProperty(ref _removeModelName, value))
+            {
+                RemoveModelCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string CopySourceModelName
+    {
+        get => _copySourceModelName;
+        set
+        {
+            if (SetProperty(ref _copySourceModelName, value))
+            {
+                CopyModelCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string CopyTargetModelName
+    {
+        get => _copyTargetModelName;
+        set
+        {
+            if (SetProperty(ref _copyTargetModelName, value))
+            {
+                CopyModelCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public OllamaModelSnapshot? SelectedModel
+    {
+        get => _selectedModel;
+        set
+        {
+            if (SetProperty(ref _selectedModel, value))
+            {
+                StopSelectedModelCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
     public string ErrorText
     {
         get => _errorText ?? string.Empty;
@@ -213,7 +292,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             var settings = await _settingsService.LoadAsync(cancellationToken);
             _notificationService.SetDebounceSeconds(settings.NotificationDebounceSeconds);
-            
+
             var snapshot = await _statusService.GetSnapshotAsync(settings, cancellationToken);
             CheckAndNotifyStateChanges(snapshot, settings);
             ApplySnapshot(snapshot);
@@ -239,7 +318,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         if (!settings.EnableNotifications)
             return;
 
-        // Notify Ollama status changes
         if (_previousState != snapshot.State)
         {
             if (snapshot.State == OllamaMonitorState.NotReachable || snapshot.State == OllamaMonitorState.Error)
@@ -252,7 +330,7 @@ public sealed class MainWindowViewModel : ViewModelBase
                         $"Ollama is no longer reachable at {snapshot.Endpoint}\nCheck the service and logs.");
                 }
             }
-            else if (_previousState.HasValue && 
+            else if (_previousState.HasValue &&
                      (_previousState == OllamaMonitorState.NotReachable || _previousState == OllamaMonitorState.Error))
             {
                 if ((settings.NotificationEvents & NotificationEventType.OllamaOnline) != 0)
@@ -267,7 +345,6 @@ public sealed class MainWindowViewModel : ViewModelBase
             _previousState = snapshot.State;
         }
 
-        // Notify model changes
         if (_latestSnapshot is not null)
         {
             var previousModelNames = new HashSet<string>(_latestSnapshot.Models.Select(m => m.Name));
@@ -296,7 +373,6 @@ public sealed class MainWindowViewModel : ViewModelBase
             }
         }
 
-        // Notify resource thresholds
         if (snapshot.Resources is not null && settings.EnableGpuMetrics)
         {
             if (snapshot.Resources.CpuPercent > settings.HighCpuThresholdPercent)
@@ -361,14 +437,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         CompactModelsText = BuildCompactModelsText(snapshot.Models);
         ErrorText = snapshot.ErrorMessage ?? string.Empty;
 
-        // Update the cache with persistent models (preserves History across refreshes)
-        var currentModelNames = new HashSet<string>();
+        var currentModelNames = new List<string>();
         foreach (var newModel in snapshot.Models)
         {
             currentModelNames.Add(newModel.Name);
             var cachedModel = GetOrUpdateModel(newModel, snapshot.Resources);
-            
-            // Feed resource data into history if this is an active model
+
             if (cachedModel.IsActive && snapshot.Resources is not null)
             {
                 cachedModel.History.AddSample(
@@ -378,14 +452,13 @@ public sealed class MainWindowViewModel : ViewModelBase
             }
         }
 
-        // Remove stale models from cache
-        var staleKeys = _modelCache.Keys.Except(currentModelNames).ToList();
+        var currentModelSet = new HashSet<string>(currentModelNames);
+        var staleKeys = _modelCache.Keys.Except(currentModelSet).ToList();
         foreach (var staleKey in staleKeys)
         {
             _modelCache.Remove(staleKey);
         }
 
-        // Populate the Models collection from cache in the same order as snapshot
         Models.Clear();
         foreach (var modelName in currentModelNames)
         {
@@ -395,7 +468,16 @@ public sealed class MainWindowViewModel : ViewModelBase
             }
         }
 
+        if (SelectedModel is not null)
+        {
+            SelectedModel = Models.FirstOrDefault(model => model.Name.Equals(SelectedModel.Name, StringComparison.OrdinalIgnoreCase));
+        }
+
         UnloadAllModelsCommand.RaiseCanExecuteChanged();
+        StopSelectedModelCommand.RaiseCanExecuteChanged();
+        PullModelCommand.RaiseCanExecuteChanged();
+        RemoveModelCommand.RaiseCanExecuteChanged();
+        CopyModelCommand.RaiseCanExecuteChanged();
     }
 
     private async Task UnloadAllModelsAsync(CancellationToken cancellationToken)
@@ -416,6 +498,19 @@ public sealed class MainWindowViewModel : ViewModelBase
                 if (!result.IsSuccess && !string.IsNullOrWhiteSpace(result.ErrorMessage))
                 {
                     failures.Add(result.ErrorMessage);
+                    ShowOperationNotification(
+                        settings,
+                        NotificationEventType.ModelOperationFailed,
+                        "❌ Stop Failed",
+                        $"Could not stop '{modelName}'. {result.ErrorMessage}");
+                }
+                else
+                {
+                    ShowOperationNotification(
+                        settings,
+                        NotificationEventType.ModelOperationSucceeded,
+                        "✅ Model Stopped",
+                        $"Stopped '{modelName}'.");
                 }
             }
 
@@ -423,7 +518,12 @@ public sealed class MainWindowViewModel : ViewModelBase
             {
                 ErrorText = string.Join(" | ", failures.Distinct());
             }
+            else
+            {
+                ErrorText = string.Empty;
+            }
 
+            await VerifyStoppedModelsAsync(settings, modelsToUnload, cancellationToken);
             await RefreshAsync(cancellationToken);
         }
         catch (OperationCanceledException)
@@ -437,16 +537,229 @@ public sealed class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private async Task StopSelectedModelAsync(CancellationToken cancellationToken)
+    {
+        if (SelectedModel is null)
+        {
+            return;
+        }
+
+        var modelName = SelectedModel.Name;
+        try
+        {
+            var settings = await _settingsService.LoadAsync(cancellationToken);
+            var result = await _statusService.UnloadModelAsync(settings, modelName, cancellationToken);
+            if (!result.IsSuccess)
+            {
+                ErrorText = result.ErrorMessage ?? $"Unable to stop '{modelName}'.";
+                ShowOperationNotification(
+                    settings,
+                    NotificationEventType.ModelOperationFailed,
+                    "❌ Stop Failed",
+                    $"Could not stop '{modelName}'. {result.ErrorMessage}");
+                return;
+            }
+
+            ErrorText = string.Empty;
+            ShowOperationNotification(
+                settings,
+                NotificationEventType.ModelOperationSucceeded,
+                "✅ Model Stopped",
+                $"Stopped '{modelName}'.");
+            await VerifyStoppedModelsAsync(settings, [modelName], cancellationToken);
+            await RefreshAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown path.
+        }
+        catch (Exception exception)
+        {
+            _diagnostics.WriteError("Stop selected model request failed.", exception);
+            ErrorText = exception.Message;
+        }
+    }
+
+    private async Task PullModelAsync(CancellationToken cancellationToken)
+    {
+        var modelName = PullModelName.Trim();
+        if (string.IsNullOrWhiteSpace(modelName))
+        {
+            return;
+        }
+
+        await RunModelOperationAsync(
+            cancellationToken,
+            settings => _statusService.PullModelAsync(settings, modelName, cancellationToken),
+            $"Pulled '{modelName}'.",
+            $"Pull failed for '{modelName}'.");
+    }
+
+    private async Task RemoveModelAsync(CancellationToken cancellationToken)
+    {
+        var modelName = RemoveModelName.Trim();
+        if (string.IsNullOrWhiteSpace(modelName))
+        {
+            return;
+        }
+
+        await RunModelOperationAsync(
+            cancellationToken,
+            settings => _statusService.RemoveModelAsync(settings, modelName, cancellationToken),
+            $"Removed '{modelName}'.",
+            $"Remove failed for '{modelName}'.");
+    }
+
+    private async Task CopyModelAsync(CancellationToken cancellationToken)
+    {
+        var sourceModel = CopySourceModelName.Trim();
+        var targetModel = CopyTargetModelName.Trim();
+        if (string.IsNullOrWhiteSpace(sourceModel) || string.IsNullOrWhiteSpace(targetModel))
+        {
+            return;
+        }
+
+        await RunModelOperationAsync(
+            cancellationToken,
+            settings => _statusService.CopyModelAsync(settings, sourceModel, targetModel, cancellationToken),
+            $"Copied '{sourceModel}' to '{targetModel}'.",
+            $"Copy failed for '{sourceModel}' to '{targetModel}'.");
+    }
+
+    private async Task StartOllamaAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var settings = await _settingsService.LoadAsync(cancellationToken);
+            var result = _statusService.StartOllama(settings);
+            if (!result.IsSuccess)
+            {
+                ErrorText = result.ErrorMessage ?? "Could not start Ollama.";
+                ShowOperationNotification(
+                    settings,
+                    NotificationEventType.ModelOperationFailed,
+                    "❌ Ollama Start Failed",
+                    ErrorText);
+                return;
+            }
+
+            ErrorText = string.Empty;
+            ShowOperationNotification(
+                settings,
+                NotificationEventType.OllamaStarted,
+                "🚀 Ollama Start Requested",
+                "Ollama daemon start command was sent.");
+            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+            await RefreshAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown path.
+        }
+        catch (Exception exception)
+        {
+            _diagnostics.WriteError("Start Ollama request failed.", exception);
+            ErrorText = exception.Message;
+        }
+    }
+
+    private async Task RunModelOperationAsync(
+        CancellationToken cancellationToken,
+        Func<AppSettings, Task<OllamaApiCallResult<bool>>> operation,
+        string successMessage,
+        string failureMessage)
+    {
+        try
+        {
+            var settings = await _settingsService.LoadAsync(cancellationToken);
+            var result = await operation(settings);
+            if (!result.IsSuccess)
+            {
+                ErrorText = string.IsNullOrWhiteSpace(result.ErrorMessage) ? failureMessage : result.ErrorMessage;
+                ShowOperationNotification(
+                    settings,
+                    NotificationEventType.ModelOperationFailed,
+                    "❌ Model Operation Failed",
+                    ErrorText);
+                return;
+            }
+
+            ErrorText = string.Empty;
+            ShowOperationNotification(
+                settings,
+                NotificationEventType.ModelOperationSucceeded,
+                "✅ Model Operation Completed",
+                successMessage);
+            await RefreshAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown path.
+        }
+        catch (Exception exception)
+        {
+            _diagnostics.WriteError("Model operation failed.", exception);
+            ErrorText = exception.Message;
+        }
+    }
+
+    private async Task VerifyStoppedModelsAsync(
+        AppSettings settings,
+        IReadOnlyCollection<string> requestedModels,
+        CancellationToken cancellationToken)
+    {
+        var remainingModels = new HashSet<string>(requestedModels, StringComparer.OrdinalIgnoreCase);
+        if (remainingModels.Count == 0)
+        {
+            return;
+        }
+
+        for (var attempt = 0; attempt < 5 && remainingModels.Count > 0; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+
+            var runningResult = await _statusService.GetRunningModelNamesAsync(settings, cancellationToken);
+            if (!runningResult.IsSuccess || runningResult.Value is null)
+            {
+                continue;
+            }
+
+            remainingModels.IntersectWith(runningResult.Value);
+        }
+
+        if (remainingModels.Count > 0)
+        {
+            ErrorText = $"Still running after stop request: {string.Join(", ", remainingModels)}";
+        }
+    }
+
+    private void ShowOperationNotification(
+        AppSettings settings,
+        NotificationEventType eventType,
+        string title,
+        string message)
+    {
+        if (!settings.EnableNotifications)
+        {
+            return;
+        }
+
+        if ((settings.NotificationEvents & eventType) == 0)
+        {
+            return;
+        }
+
+        _notificationService.ShowNotification(eventType, title, message);
+    }
+
     private OllamaModelSnapshot GetOrUpdateModel(OllamaModelSnapshot newModel, ResourceSnapshot? resources)
     {
         if (_modelCache.TryGetValue(newModel.Name, out var existingModel))
         {
-            // Return the cached model directly — History object is preserved
-            // (Skip property updates since record creation would reset History)
             return existingModel;
         }
 
-        // New model: add to cache
         _modelCache[newModel.Name] = newModel;
         return newModel;
     }
@@ -510,4 +823,3 @@ public sealed class MainWindowViewModel : ViewModelBase
         _notificationService?.Dispose();
     }
 }
-

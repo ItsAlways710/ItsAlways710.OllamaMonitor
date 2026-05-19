@@ -43,6 +43,7 @@ src/ElBruno.OllamaMonitor/
 ├── Services/
 │   ├── ProcessMetricsService.cs   # CPU, RAM from Ollama process
 │   ├── NvidiaSmiMetricsService.cs # GPU metrics via nvidia-smi
+│   ├── OllamaCliService.cs        # Local ollama CLI integration (ps/stop/pull/rm/cp/serve)
 │   ├── TrayIconService.cs         # System tray lifecycle
 │   ├── TrayStatusMapper.cs        # OllamaMonitorState -> icon color
 │   └── TrayMenuBuilder.cs         # Context menu construction
@@ -267,4 +268,20 @@ This places the executable in the user's PATH and creates the `ollamamon` comman
 
 ---
 
-**Next Phase (Phase 2):** MVVM framework, logging framework, unit tests, settings UI dialog, historical charts.
+## Automated Tests
+
+The solution now includes `tests/ElBruno.OllamaMonitor.Tests` with coverage for:
+- unload strategy behavior (`Auto`, `Cli`, remote/local gating)
+- CLI stop + API fallback behavior
+- running model lookup strategy
+- new settings defaults for feature flags
+
+Run tests with:
+
+```bash
+dotnet test ElBruno.OllamaMonitor.sln
+```
+
+---
+
+**Next Phase (Phase 2):** additional UI-level tests and historical charts.

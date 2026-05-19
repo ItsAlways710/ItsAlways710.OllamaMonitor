@@ -2,6 +2,24 @@
 
 ## Version History
 
+### 0.8.1 — CLI Model Management and Stop Strategy
+
+**Release Date:** 2026-05-19
+
+This release adds direct model lifecycle actions in the monitor UI and upgrades unload behavior to prefer `ollama stop` when appropriate.
+
+#### What's New
+
+- ✅ New local model actions in the main window: **Stop selected**, **Stop all**, **Pull**, **Remove**, and **Copy**
+- ✅ New **Start Ollama** action to trigger `ollama serve` from the UI (local endpoints)
+- ✅ New unload strategy setting: **Auto / Cli / Api**
+- ✅ `Auto` strategy now prefers CLI `ollama stop` on local endpoints and falls back to API unload when needed
+- ✅ Added post-stop verification checks to confirm models are no longer running
+- ✅ Added new optional notifications for model operation success/failure and Ollama start events
+- ✅ Added automated tests for unload strategy behavior, API fallback, and new settings defaults
+
+---
+
 ### 0.7.0 — Settings Window with Tray Menu Access
 
 **Release Date:** 2026-04-27

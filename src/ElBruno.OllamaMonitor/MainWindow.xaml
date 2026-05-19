@@ -54,12 +54,18 @@
                         Padding="14,6"
                         Background="#0E639C"
                         Foreground="White" />
-                <Button Content="Unload Models"
+                <Button Content="Stop All Models"
                         Command="{Binding UnloadAllModelsCommand}"
-                        ToolTip="Unload all loaded models from memory (keep_alive=0)."
+                        ToolTip="Stop all running models."
                         Margin="0,0,8,0"
                         Padding="14,6"
                         Background="#B45309"
+                        Foreground="White" />
+                <Button Content="Start Ollama"
+                        Command="{Binding StartOllamaCommand}"
+                        Margin="0,0,8,0"
+                        Padding="14,6"
+                        Background="#0B7A3E"
                         Foreground="White" />
                 <Button Content="Settings"
                         Command="{Binding OpenSettingsCommand}"
@@ -216,12 +222,107 @@
                           BorderBrush="#FF1F2937"
                           Foreground="#FFFFFFFF">
                     <DockPanel Margin="8">
+                        <StackPanel DockPanel.Dock="Top"
+                                   Margin="0,0,0,12">
+                            <TextBlock Text="Running Model Actions"
+                                      FontSize="11"
+                                      Foreground="#FFA0AEC0"
+                                      Margin="0,0,0,6" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Stop Selected"
+                                       Command="{Binding StopSelectedModelCommand}"
+                                       Margin="0,0,8,0"
+                                       Padding="10,4"
+                                       Background="#B45309"
+                                       Foreground="White" />
+                                <Button Content="Refresh Models"
+                                       Command="{Binding RefreshCommand}"
+                                       Margin="0,0,8,0"
+                                       Padding="10,4"
+                                       Background="#0E639C"
+                                       Foreground="White" />
+                            </StackPanel>
+
+                            <TextBlock Text="Model Lifecycle"
+                                      FontSize="11"
+                                      Foreground="#FFA0AEC0"
+                                      Margin="0,12,0,6" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding PullModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="#1F2937"
+                                        Foreground="White"
+                                        BorderBrush="#374151"
+                                        VerticalContentAlignment="Center" />
+                                <Button Grid.Column="1"
+                                       Content="Pull"
+                                       Command="{Binding PullModelCommand}"
+                                       Padding="10,4"
+                                       Background="#0B7A3E"
+                                       Foreground="White" />
+                            </Grid>
+
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding RemoveModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="#1F2937"
+                                        Foreground="White"
+                                        BorderBrush="#374151"
+                                        VerticalContentAlignment="Center" />
+                                <Button Grid.Column="1"
+                                       Content="Remove"
+                                       Command="{Binding RemoveModelCommand}"
+                                       Padding="10,4"
+                                       Background="#991B1B"
+                                       Foreground="White" />
+                            </Grid>
+
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding CopySourceModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="#1F2937"
+                                        Foreground="White"
+                                        BorderBrush="#374151"
+                                        VerticalContentAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                        Text="{Binding CopyTargetModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="#1F2937"
+                                        Foreground="White"
+                                        BorderBrush="#374151"
+                                        VerticalContentAlignment="Center" />
+                                <Button Grid.Column="2"
+                                       Content="Copy"
+                                       Command="{Binding CopyModelCommand}"
+                                       Padding="10,4"
+                                       Background="#0E639C"
+                                       Foreground="White" />
+                            </Grid>
+                        </StackPanel>
                         <TextBlock DockPanel.Dock="Top"
                                    Text="{Binding ModelsSummaryText}"
                                    Margin="0,0,0,12"
                                    FontSize="11"
                                    Foreground="#FFA0AEC0" />
                         <ListView ItemsSource="{Binding Models}"
+                                  SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
                                   Background="#FF1F2937"
                                   Foreground="#FFFFFFFF">
                             <ListView.View>

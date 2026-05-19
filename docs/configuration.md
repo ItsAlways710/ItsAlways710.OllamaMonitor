@@ -21,6 +21,7 @@ The file is created automatically with default values on first run.
 ```json
 {
   "endpoint": "http://localhost:11434",
+  "unloadStrategy": 0,
   "refreshIntervalSeconds": 2,
   "startMinimizedToTray": true,
   "showFloatingWindowOnStart": false,
@@ -28,7 +29,10 @@ The file is created automatically with default values on first run.
   "enableDiskMetrics": true,
   "highCpuThresholdPercent": 80,
   "highMemoryThresholdGb": 16,
-  "highGpuThresholdPercent": 85
+  "highGpuThresholdPercent": 85,
+  "enableNotifications": true,
+  "notificationEvents": 271,
+  "notificationDebounceSeconds": 30
 }
 ```
 
@@ -66,6 +70,17 @@ How often (in seconds) the app polls the Ollama API and system metrics.
 "refreshIntervalSeconds": 5   // Moderate polling
 "refreshIntervalSeconds": 10  // Low frequency
 ```
+
+### `unloadStrategy`
+
+**Type:** `enum` (`0=Auto`, `1=Cli`, `2=Api`)  
+**Default:** `0` (`Auto`)
+
+Controls how the monitor unloads/stops running models:
+
+- `Auto`: Uses CLI `ollama stop` for local endpoints; falls back to API unload for remote endpoints.
+- `Cli`: Always uses `ollama stop` (local endpoints only).
+- `Api`: Always uses API unload (`/api/generate` with `keep_alive=0`).
 
 ### `startMinimizedToTray`
 
@@ -156,6 +171,30 @@ When GPU utilization exceeds this threshold, the tray icon turns orange.
 "highGpuThresholdPercent": 99   // Conservative
 ```
 
+### `enableNotifications`
+
+**Type:** `bool`  
+**Default:** `true`
+
+Enables Windows toast notifications for configured events.
+
+### `notificationEvents`
+
+**Type:** `flags` (`int`)  
+**Default:** `271`
+
+Bitmask of enabled notification event types. The default includes:
+- Ollama offline/online
+- Model loaded/unloaded
+- Model operation failed
+
+### `notificationDebounceSeconds`
+
+**Type:** `int`  
+**Default:** `30`
+
+Minimum interval between repeated notifications of the same event type.
+
 ## Editing Configuration
 
 ### Option 1: CLI Commands
@@ -195,6 +234,7 @@ ollamamon config reset
 ```json
 {
   "endpoint": "http://192.168.1.50:11434",
+  "unloadStrategy": 0,
   "refreshIntervalSeconds": 3,
   "startMinimizedToTray": true,
   "showFloatingWindowOnStart": false,
@@ -202,7 +242,10 @@ ollamamon config reset
   "enableDiskMetrics": true,
   "highCpuThresholdPercent": 75,
   "highMemoryThresholdGb": 12,
-  "highGpuThresholdPercent": 80
+  "highGpuThresholdPercent": 80,
+  "enableNotifications": true,
+  "notificationEvents": 271,
+  "notificationDebounceSeconds": 30
 }
 ```
 

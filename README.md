@@ -10,6 +10,15 @@ A tiny Windows system tray tool to monitor your local Ollama runtime.
 
 > Quick visual feedback about your Ollama status, resource usage, and models—right from your Windows system tray.
 
+## What's New
+
+- Added full model lifecycle controls in the monitor UI: **Stop selected**, **Stop all**, **Pull**, **Remove**, **Copy**
+- Added **Start Ollama** action from the main window
+- Upgraded unload logic with strategy support: **Auto / Cli / Api**
+- `Auto` strategy now prefers `ollama stop` for local endpoints and API fallback for remote endpoints
+- Added verification after stop requests to confirm models are no longer running
+- Added automated tests for unload strategy behavior and new settings defaults
+
 ## What It Does
 
 ElBruno.OllamaMonitor sits in your Windows system tray and tells you:
@@ -18,6 +27,7 @@ ElBruno.OllamaMonitor sits in your Windows system tray and tells you:
 - **Is a model loaded?** See what's currently active.
 - **How much CPU, RAM, and GPU is it using?** Real-time resource metrics from the Ollama process.
 - **Any errors?** Get instant visual feedback if something's wrong.
+- **Need model actions?** Stop running models, pull new models, remove old ones, and copy model tags from the monitor window.
 
 Perfect for:
 - Local AI developers who need quick visibility into Ollama
@@ -91,6 +101,9 @@ Click the icon to open the full details window for diagnostics, or open the mini
 - ✅ **Copy to Clipboard** — Quickly share diagnostics
 - ✅ **Manual Refresh** — Force an immediate check
 - ✅ **Open Ollama URL** — Quick link to the Ollama API
+- ✅ **Model Management** — Stop selected/all models, pull/remove/copy models
+- ✅ **CLI-Based Stop Strategy** — Uses `ollama stop` for local endpoints with API fallback support
+- ✅ **Start Ollama** — Trigger `ollama serve` from the UI for local setups
 
 ## Requirements
 

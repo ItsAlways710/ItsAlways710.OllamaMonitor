@@ -10,17 +10,20 @@ namespace ElBruno.OllamaMonitor.Services;
 public sealed class OllamaStatusService
 {
     private readonly OllamaClient _ollamaClient;
+    private readonly IOllamaCliService _ollamaCliService;
     private readonly ProcessMetricsService _processMetricsService;
     private readonly NvidiaSmiMetricsService _gpuMetricsService;
     private readonly DiagnosticsLogService _diagnostics;
 
     public OllamaStatusService(
         OllamaClient ollamaClient,
+        IOllamaCliService ollamaCliService,
         ProcessMetricsService processMetricsService,
         NvidiaSmiMetricsService gpuMetricsService,
         DiagnosticsLogService diagnostics)
     {
         _ollamaClient = ollamaClient;
+        _ollamaCliService = ollamaCliService;
         _processMetricsService = processMetricsService;
         _gpuMetricsService = gpuMetricsService;
         _diagnostics = diagnostics;
@@ -102,7 +105,7 @@ public sealed class OllamaStatusService
             return new OllamaApiCallResult<bool>(false, ErrorMessage: "Configured endpoint is not a valid absolute URL.");
         }
 
-        var result = await _ollamaClient.UnloadModelAsync(endpoint, modelName, cancellationToken);
+        var result = await StopModelAsync(settings, endpoint, modelName, cancellationToken);
         if (result.IsSuccess)
         {
             _diagnostics.WriteInfo($"Requested unload for model '{modelName}'.");
@@ -113,6 +116,155 @@ public sealed class OllamaStatusService
         }
 
         return result;
+    }
+
+    public async Task<OllamaApiCallResult<IReadOnlyList<string>>> GetRunningModelNamesAsync(
+        AppSettings settings,
+        CancellationToken cancellationToken)
+    {
+        if (!Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out var endpoint))
+        {
+            return new OllamaApiCallResult<IReadOnlyList<string>>(false, ErrorMessage: "Configured endpoint is not a valid absolute URL.");
+        }
+
+        if (ShouldUseCli(settings.UnloadStrategy, endpoint))
+        {
+            var cliResult = await _ollamaCliService.GetRunningModelsAsync(cancellationToken);
+            if (cliResult.IsSuccess)
+            {
+                return cliResult;
+            }
+        }
+
+        var runningModelsResult = await _ollamaClient.GetRunningModelsAsync(endpoint, cancellationToken);
+        if (!runningModelsResult.IsSuccess || runningModelsResult.Value is null)
+        {
+            return new OllamaApiCallResult<IReadOnlyList<string>>(
+                false,
+                ErrorMessage: runningModelsResult.ErrorMessage ?? "Unable to read running models.");
+        }
+
+        var modelNames = runningModelsResult.Value.Models.Select(model => model.Name).ToArray();
+        return new OllamaApiCallResult<IReadOnlyList<string>>(true, modelNames);
+    }
+
+    public async Task<OllamaApiCallResult<bool>> PullModelAsync(AppSettings settings, string modelName, CancellationToken cancellationToken)
+    {
+        if (!Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out var endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Configured endpoint is not a valid absolute URL.");
+        }
+
+        if (!IsLocalEndpoint(endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Model pull is available only for local Ollama endpoints.");
+        }
+
+        return await _ollamaCliService.PullModelAsync(modelName, cancellationToken);
+    }
+
+    public async Task<OllamaApiCallResult<bool>> RemoveModelAsync(AppSettings settings, string modelName, CancellationToken cancellationToken)
+    {
+        if (!Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out var endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Configured endpoint is not a valid absolute URL.");
+        }
+
+        if (!IsLocalEndpoint(endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Model removal is available only for local Ollama endpoints.");
+        }
+
+        return await _ollamaCliService.RemoveModelAsync(modelName, cancellationToken);
+    }
+
+    public async Task<OllamaApiCallResult<bool>> CopyModelAsync(
+        AppSettings settings,
+        string sourceModelName,
+        string targetModelName,
+        CancellationToken cancellationToken)
+    {
+        if (!Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out var endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Configured endpoint is not a valid absolute URL.");
+        }
+
+        if (!IsLocalEndpoint(endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Model copy is available only for local Ollama endpoints.");
+        }
+
+        return await _ollamaCliService.CopyModelAsync(sourceModelName, targetModelName, cancellationToken);
+    }
+
+    public OllamaApiCallResult<bool> StartOllama(AppSettings settings)
+    {
+        if (!Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out var endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Configured endpoint is not a valid absolute URL.");
+        }
+
+        if (!IsLocalEndpoint(endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Starting Ollama is available only for local endpoints.");
+        }
+
+        return _ollamaCliService.StartOllama();
+    }
+
+    private async Task<OllamaApiCallResult<bool>> StopModelAsync(
+        AppSettings settings,
+        Uri endpoint,
+        string modelName,
+        CancellationToken cancellationToken)
+    {
+        if (settings.UnloadStrategy is ModelUnloadStrategy.Cli && !IsLocalEndpoint(endpoint))
+        {
+            return new OllamaApiCallResult<bool>(
+                false,
+                ErrorMessage: "CLI unload strategy requires a local Ollama endpoint.");
+        }
+
+        if (ShouldUseCli(settings.UnloadStrategy, endpoint))
+        {
+            var stopResult = await _ollamaCliService.StopModelAsync(modelName, cancellationToken);
+            if (stopResult.IsSuccess || settings.UnloadStrategy is ModelUnloadStrategy.Cli)
+            {
+                return stopResult;
+            }
+        }
+
+        var apiResult = await _ollamaClient.UnloadModelAsync(endpoint, modelName, cancellationToken);
+        if (apiResult.IsSuccess || settings.UnloadStrategy is not ModelUnloadStrategy.Auto)
+        {
+            return apiResult;
+        }
+
+        return new OllamaApiCallResult<bool>(
+            false,
+            ErrorMessage: "Both CLI stop and API unload requests failed.");
+    }
+
+    private static bool ShouldUseCli(ModelUnloadStrategy strategy, Uri endpoint)
+    {
+        return strategy switch
+        {
+            ModelUnloadStrategy.Cli => true,
+            ModelUnloadStrategy.Api => false,
+            _ => IsLocalEndpoint(endpoint)
+        };
+    }
+
+    private static bool IsLocalEndpoint(Uri endpoint)
+    {
+        if (endpoint.IsLoopback)
+        {
+            return true;
+        }
+
+        var host = endpoint.Host;
+        return host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+               || host.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static IReadOnlyList<OllamaModelSnapshot> BuildModelSnapshots(IReadOnlyList<OllamaPsModelResponse>? models)

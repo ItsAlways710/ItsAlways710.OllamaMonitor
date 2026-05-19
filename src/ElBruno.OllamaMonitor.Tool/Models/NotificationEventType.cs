@@ -11,4 +11,7 @@ public enum NotificationEventType
     HighCpuUsage = 1 << 4,
     HighMemoryUsage = 1 << 5,
     HighGpuUsage = 1 << 6,
+    ModelOperationSucceeded = 1 << 7,
+    ModelOperationFailed = 1 << 8,
+    OllamaStarted = 1 << 9,
 }

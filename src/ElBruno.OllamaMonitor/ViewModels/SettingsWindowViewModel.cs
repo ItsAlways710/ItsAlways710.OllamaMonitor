@@ -16,9 +16,13 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     private bool _notifyHighCpu;
     private bool _notifyHighMemory;
     private bool _notifyHighGpu;
+    private bool _notifyModelOperationSucceeded;
+    private bool _notifyModelOperationFailed;
+    private bool _notifyOllamaStarted;
     private int _notificationDebounceSeconds;
     private bool _startMinimizedToTray;
     private bool _showFloatingWindowOnStart;
+    private ModelUnloadStrategy _selectedUnloadStrategy;
 
     public SettingsWindowViewModel(AppSettings settings, AppSettingsService settingsService)
     {
@@ -76,6 +80,24 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         set => SetProperty(ref _notifyHighGpu, value);
     }
 
+    public bool NotifyModelOperationSucceeded
+    {
+        get => _notifyModelOperationSucceeded;
+        set => SetProperty(ref _notifyModelOperationSucceeded, value);
+    }
+
+    public bool NotifyModelOperationFailed
+    {
+        get => _notifyModelOperationFailed;
+        set => SetProperty(ref _notifyModelOperationFailed, value);
+    }
+
+    public bool NotifyOllamaStarted
+    {
+        get => _notifyOllamaStarted;
+        set => SetProperty(ref _notifyOllamaStarted, value);
+    }
+
     public int NotificationDebounceSeconds
     {
         get => _notificationDebounceSeconds;
@@ -94,6 +116,14 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         set => SetProperty(ref _showFloatingWindowOnStart, value);
     }
 
+    public IReadOnlyList<ModelUnloadStrategy> UnloadStrategies { get; } = Enum.GetValues<ModelUnloadStrategy>();
+
+    public ModelUnloadStrategy SelectedUnloadStrategy
+    {
+        get => _selectedUnloadStrategy;
+        set => SetProperty(ref _selectedUnloadStrategy, value);
+    }
+
     public async Task SaveAsync(CancellationToken cancellationToken)
     {
         var notificationEvents = BuildNotificationFlags();
@@ -104,7 +134,8 @@ public sealed class SettingsWindowViewModel : ViewModelBase
             NotificationEvents = notificationEvents,
             NotificationDebounceSeconds = NotificationDebounceSeconds,
             StartMinimizedToTray = StartMinimizedToTray,
-            ShowFloatingWindowOnStart = ShowFloatingWindowOnStart
+            ShowFloatingWindowOnStart = ShowFloatingWindowOnStart,
+            UnloadStrategy = SelectedUnloadStrategy
         };
 
         await _settingsService.SaveAsync(updatedSettings, cancellationToken);
@@ -116,6 +147,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         NotificationDebounceSeconds = _settings.NotificationDebounceSeconds;
         StartMinimizedToTray = _settings.StartMinimizedToTray;
         ShowFloatingWindowOnStart = _settings.ShowFloatingWindowOnStart;
+        SelectedUnloadStrategy = _settings.UnloadStrategy;
 
         NotifyOllamaOffline = (_settings.NotificationEvents & NotificationEventType.OllamaOffline) != 0;
         NotifyOllamaOnline = (_settings.NotificationEvents & NotificationEventType.OllamaOnline) != 0;
@@ -124,6 +156,9 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         NotifyHighCpu = (_settings.NotificationEvents & NotificationEventType.HighCpuUsage) != 0;
         NotifyHighMemory = (_settings.NotificationEvents & NotificationEventType.HighMemoryUsage) != 0;
         NotifyHighGpu = (_settings.NotificationEvents & NotificationEventType.HighGpuUsage) != 0;
+        NotifyModelOperationSucceeded = (_settings.NotificationEvents & NotificationEventType.ModelOperationSucceeded) != 0;
+        NotifyModelOperationFailed = (_settings.NotificationEvents & NotificationEventType.ModelOperationFailed) != 0;
+        NotifyOllamaStarted = (_settings.NotificationEvents & NotificationEventType.OllamaStarted) != 0;
     }
 
     private NotificationEventType BuildNotificationFlags()
@@ -144,6 +179,12 @@ public sealed class SettingsWindowViewModel : ViewModelBase
             flags |= NotificationEventType.HighMemoryUsage;
         if (NotifyHighGpu)
             flags |= NotificationEventType.HighGpuUsage;
+        if (NotifyModelOperationSucceeded)
+            flags |= NotificationEventType.ModelOperationSucceeded;
+        if (NotifyModelOperationFailed)
+            flags |= NotificationEventType.ModelOperationFailed;
+        if (NotifyOllamaStarted)
+            flags |= NotificationEventType.OllamaStarted;
 
         return flags;
     }
@@ -153,4 +194,3 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         // Cleanup if needed in the future
     }
 }
-

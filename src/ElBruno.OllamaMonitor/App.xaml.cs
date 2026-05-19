@@ -79,9 +79,10 @@ public partial class App : System.Windows.Application
         };
 
         var ollamaClient = new OllamaClient(_httpClient, diagnostics);
+        var ollamaCliService = new OllamaCliService(diagnostics);
         var processMetricsService = new ProcessMetricsService(diagnostics);
         var gpuMetricsService = new NvidiaSmiMetricsService(diagnostics);
-        var statusService = new OllamaStatusService(ollamaClient, processMetricsService, gpuMetricsService, diagnostics);
+        var statusService = new OllamaStatusService(ollamaClient, ollamaCliService, processMetricsService, gpuMetricsService, diagnostics);
 
         _mainWindow = new MainWindow();
         _miniMonitorWindow = new MiniMonitorWindow();
@@ -167,4 +168,3 @@ public partial class App : System.Windows.Application
         };
     }
 }
-
