@@ -31,6 +31,26 @@ public sealed class OllamaClient
     public Task<OllamaApiCallResult<OllamaPsResponse>> GetRunningModelsAsync(Uri endpoint, CancellationToken cancellationToken) =>
         GetAsync<OllamaPsResponse>(endpoint, "/api/ps", cancellationToken);
 
+    public async Task<OllamaApiCallResult<bool>> UnloadModelAsync(Uri endpoint, string modelName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var payload = new { model = modelName, keep_alive = 0 };
+            using var response = await _httpClient.PostAsJsonAsync(BuildUri(endpoint, "/api/generate"), payload, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new OllamaApiCallResult<bool>(false, ErrorMessage: $"Ollama API returned {(int)response.StatusCode} when unloading '{modelName}'.");
+            }
+
+            return new OllamaApiCallResult<bool>(true, true);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or NotSupportedException or JsonException)
+        {
+            _diagnostics.WriteWarning($"Ollama unload call failed for model '{modelName}': {exception.Message}");
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: exception.Message);
+        }
+    }
+
     private async Task<OllamaApiCallResult<T>> GetAsync<T>(Uri endpoint, string relativePath, CancellationToken cancellationToken)
     {
         try

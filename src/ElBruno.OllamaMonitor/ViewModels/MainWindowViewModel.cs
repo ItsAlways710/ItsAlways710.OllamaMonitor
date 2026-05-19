@@ -63,6 +63,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         OpenEndpointCommand = new RelayCommand(OpenEndpoint);
         OpenSettingsCommand = new AsyncRelayCommand(OpenSettingsAsync);
         HideWindowCommand = new RelayCommand(() => _hideWindow());
+        UnloadAllModelsCommand = new AsyncRelayCommand(
+            () => UnloadAllModelsAsync(CancellationToken.None),
+            () => Models.Count > 0);
     }
 
     public event EventHandler<OllamaMonitorSnapshot>? SnapshotUpdated;
@@ -78,6 +81,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public AsyncRelayCommand OpenSettingsCommand { get; }
 
     public RelayCommand HideWindowCommand { get; }
+
+    public AsyncRelayCommand UnloadAllModelsCommand { get; }
 
     public string StateText
     {
@@ -388,6 +393,47 @@ public sealed class MainWindowViewModel : ViewModelBase
             {
                 Models.Add(cachedModel);
             }
+        }
+
+        UnloadAllModelsCommand.RaiseCanExecuteChanged();
+    }
+
+    private async Task UnloadAllModelsAsync(CancellationToken cancellationToken)
+    {
+        var modelsToUnload = Models.Select(model => model.Name).ToArray();
+        if (modelsToUnload.Length == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var settings = await _settingsService.LoadAsync(cancellationToken);
+            var failures = new List<string>();
+            foreach (var modelName in modelsToUnload)
+            {
+                var result = await _statusService.UnloadModelAsync(settings, modelName, cancellationToken);
+                if (!result.IsSuccess && !string.IsNullOrWhiteSpace(result.ErrorMessage))
+                {
+                    failures.Add(result.ErrorMessage);
+                }
+            }
+
+            if (failures.Count > 0)
+            {
+                ErrorText = string.Join(" | ", failures.Distinct());
+            }
+
+            await RefreshAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown path.
+        }
+        catch (Exception exception)
+        {
+            _diagnostics.WriteError("Unload models request failed.", exception);
+            ErrorText = exception.Message;
         }
     }
 

@@ -18,6 +18,78 @@
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <local:BoolToColorConverter x:Key="BoolToColorConverter" />
+
+        <Style x:Key="MiniIconButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#D97706" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#FBBF24" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#92400E" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#22FFFFFF" />
+                                <Setter Property="Foreground" Value="#80FFFFFF" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="MiniCloseButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#E11D48" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#9F1239" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <Border Background="#D91F2937"
             BorderBrush="#66FFFFFF"
@@ -37,6 +109,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="Ollama Mini Monitor"
@@ -46,16 +119,27 @@
                            VerticalAlignment="Center" />
 
                 <Button Grid.Column="1"
+                        Style="{StaticResource MiniIconButtonStyle}"
+                        Command="{Binding UnloadAllModelsCommand}"
+                        ToolTip="Unload all loaded models from memory (keep_alive=0)."
+                        Margin="0,0,6,0"
+                        Background="#B45309"
+                        BorderBrush="#F59E0B">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⏏"
+                                   FontSize="13"
+                                   Margin="0,0,5,0"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Unload"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="2"
+                        Style="{StaticResource MiniCloseButtonStyle}"
                         Click="OnCloseClicked"
-                        Width="28"
-                        Height="28"
-                        FontSize="14"
-                        FontWeight="Bold"
                         Content="×"
-                        Background="#33FFFFFF"
-                        Foreground="White"
-                        BorderBrush="#00FFFFFF"
-                        Cursor="Hand" />
+                        Background="#33FFFFFF" />
             </Grid>
 
             <TextBlock Grid.Row="1"

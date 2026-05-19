@@ -95,6 +95,26 @@ public sealed class OllamaStatusService
         };
     }
 
+    public async Task<OllamaApiCallResult<bool>> UnloadModelAsync(AppSettings settings, string modelName, CancellationToken cancellationToken)
+    {
+        if (!Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out var endpoint))
+        {
+            return new OllamaApiCallResult<bool>(false, ErrorMessage: "Configured endpoint is not a valid absolute URL.");
+        }
+
+        var result = await _ollamaClient.UnloadModelAsync(endpoint, modelName, cancellationToken);
+        if (result.IsSuccess)
+        {
+            _diagnostics.WriteInfo($"Requested unload for model '{modelName}'.");
+        }
+        else
+        {
+            _diagnostics.WriteWarning($"Unload request for model '{modelName}' failed: {result.ErrorMessage}");
+        }
+
+        return result;
+    }
+
     private static IReadOnlyList<OllamaModelSnapshot> BuildModelSnapshots(IReadOnlyList<OllamaPsModelResponse>? models)
     {
         if (models is null || models.Count == 0)
