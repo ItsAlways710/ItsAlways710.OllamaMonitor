@@ -10,5 +10,8 @@ public enum NotificationEventType
     ModelUnloaded = 8,
     HighCpuUsage = 16,
     HighMemoryUsage = 32,
-    HighGpuUsage = 64
+    HighGpuUsage = 64,
+    ModelOperationSucceeded = 128,
+    ModelOperationFailed = 256,
+    OllamaStarted = 512
 }

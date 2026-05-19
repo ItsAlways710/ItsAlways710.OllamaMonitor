@@ -103,6 +103,7 @@ src/ElBruno.OllamaMonitor/
 ├── Services/
 │   ├── ProcessMetricsService.cs   # CPU/RAM metrics
 │   ├── NvidiaSmiMetricsService.cs # GPU metrics
+│   ├── OllamaCliService.cs        # Local ollama CLI integration (ps/stop/pull/rm/cp/serve)
 │   ├── TrayIconService.cs         # System tray lifecycle
 │   ├── TrayStatusMapper.cs        # Map state to icon color
 │   └── TrayMenuBuilder.cs         # Build context menu
@@ -110,6 +111,10 @@ src/ElBruno.OllamaMonitor/
 │   └── MainWindowViewModel.cs     # UI state and logic
 ├── App.xaml / App.xaml.cs         # WPF Application entry
 └── MainWindow.xaml / MainWindow.xaml.cs  # Floating details window
+
+tests/ElBruno.OllamaMonitor.Tests/
+├── OllamaStatusServiceTests.cs    # Unload strategy + fallback behavior
+└── AppSettingsTests.cs            # New defaults (unload strategy, notifications)
 ```
 
 ## Key Development Areas
@@ -229,6 +234,20 @@ Before submitting a pull request or release:
 - [ ] **Handles offline Ollama gracefully** (gray tray, "Not Reachable" message)
 - [ ] **GPU metrics** appear if nvidia-smi available, or show "N/A" otherwise
 - [ ] **Context menu** has Copy, Open URL, Refresh, Exit
+
+## Automated Tests
+
+Run all tests:
+
+```bash
+dotnet test ElBruno.OllamaMonitor.sln
+```
+
+Current automated coverage includes:
+- unload strategy behavior (`Auto`, `Cli`, remote/local gating)
+- CLI-stop/API-fallback behavior
+- running-model lookup strategy
+- default settings checks for new feature flags
 
 ## Common Development Tasks
 

@@ -18,6 +18,7 @@ Start here: **[ElBruno.OllamaMonitor Landing Page](index.html)** — Overview, f
 
 ### Development
 - **[Development Setup](development-guide.md)** — Building from source, folder structure, and debugging
+- **[Automated Tests](development-guide.md#automated-tests)** — Run and understand test coverage
 - **[Publishing Guide](publishing.md)** — Release process and NuGet publishing
 
 ### Reference

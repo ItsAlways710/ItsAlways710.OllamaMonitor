@@ -150,6 +150,27 @@
                                           Foreground="#E2E8F0"
                                           FontSize="12"
                                           Cursor="Hand" />
+                                <CheckBox x:Name="ModelOperationSucceededCheckBox"
+                                          Content="✅ Model operation succeeded (stop/pull/remove/copy)"
+                                          IsChecked="{Binding NotifyModelOperationSucceeded}"
+                                          Foreground="#E2E8F0"
+                                          Margin="0,8,0,0"
+                                          FontSize="12"
+                                          Cursor="Hand" />
+                                <CheckBox x:Name="ModelOperationFailedCheckBox"
+                                          Content="❌ Model operation failed (stop/pull/remove/copy)"
+                                          IsChecked="{Binding NotifyModelOperationFailed}"
+                                          Foreground="#E2E8F0"
+                                          Margin="0,8,0,0"
+                                          FontSize="12"
+                                          Cursor="Hand" />
+                                <CheckBox x:Name="OllamaStartedCheckBox"
+                                          Content="🚀 Ollama daemon start requested"
+                                          IsChecked="{Binding NotifyOllamaStarted}"
+                                          Foreground="#E2E8F0"
+                                          Margin="0,8,0,0"
+                                          FontSize="12"
+                                          Cursor="Hand" />
                             </StackPanel>
                         </Border>
 
@@ -254,6 +275,20 @@
                                   Foreground="#E2E8F0"
                                   FontSize="12"
                                   Cursor="Hand" />
+
+                        <TextBlock Text="Unload Strategy"
+                                   Foreground="#CBD5E1"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Margin="0,16,0,8" />
+                        <ComboBox x:Name="UnloadStrategyComboBox"
+                                  ItemsSource="{Binding UnloadStrategies}"
+                                  SelectedItem="{Binding SelectedUnloadStrategy}"
+                                  Background="#0F172A"
+                                  Foreground="#E2E8F0"
+                                  BorderBrush="#334155"
+                                  Padding="8"
+                                  ToolTip="Auto uses CLI for local endpoints and API for remote endpoints." />
                     </StackPanel>
                 </GroupBox>
 
