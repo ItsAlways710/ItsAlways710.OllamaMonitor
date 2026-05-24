@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Ollama Mini Monitor"
         Width="320"
-        Height="270"
+        Height="230"
         ResizeMode="NoResize"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -156,18 +156,16 @@
                               Margin="0,0,0,8">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,0,0,6">
+                            <Grid Margin="0,0,0,4">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="80" />
-                                    <ColumnDefinition Width="80" />
-                                    <ColumnDefinition Width="80" />
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Foreground="#FFF3F4F6"
                                            FontSize="12"
                                            VerticalAlignment="Center"
-                                           MinWidth="100">
+                                           TextTrimming="CharacterEllipsis">
                                     <TextBlock.Inlines>
                                         <Run Text="● "
                                              Foreground="{Binding IsActive, Converter={StaticResource BoolToColorConverter}}" />
@@ -175,26 +173,13 @@
                                     </TextBlock.Inlines>
                                 </TextBlock>
 
-                                <Canvas Grid.Column="1"
-                                        Width="80"
-                                        Height="20"
-                                        Margin="4,0,0,0"
-                                        Background="#1A1A2E"
-                                        x:Name="CpuChart" />
-
-                                <Canvas Grid.Column="2"
-                                        Width="80"
-                                        Height="20"
-                                        Margin="4,0,0,0"
-                                        Background="#1A1A2E"
-                                        x:Name="MemChart" />
-
-                                <Canvas Grid.Column="3"
-                                        Width="80"
-                                        Height="20"
-                                        Margin="4,0,0,0"
-                                        Background="#1A1A2E"
-                                        x:Name="GpuChart" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding ProcessorUsage}"
+                                           Foreground="#FFD1D5DB"
+                                           FontSize="11"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Right"
+                                           Margin="8,0,0,0" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

@@ -92,6 +92,62 @@ public sealed class OllamaStatusServiceTests
         Assert.Empty(fixture.Handler.Requests);
     }
 
+    [Fact]
+    public async Task GetSnapshot_WithModels_SetsProcessorUsageFromApiData()
+    {
+        // size=4GB, size_vram=3GB → 75% GPU, 25% CPU
+        var size = 4_000_000_000L;
+        var sizeVram = 3_000_000_000L;
+        var fixture = CreateFixtureWithModels(size, sizeVram);
+        var settings = new AppSettings { Endpoint = "http://localhost:11434" };
+
+        var snapshot = await fixture.Service.GetSnapshotAsync(settings, CancellationToken.None);
+
+        var model = Assert.Single(snapshot.Models);
+        Assert.Equal("25% CPU · 75% GPU", model.ProcessorUsage);
+        Assert.Equal(sizeVram, model.SizeVram);
+    }
+
+    [Fact]
+    public async Task GetSnapshot_WithCpuOnlyModel_SetsProcessorUsageTo100PercentCpu()
+    {
+        var fixture = CreateFixtureWithModels(size: 2_000_000_000L, sizeVram: 0L);
+        var settings = new AppSettings { Endpoint = "http://localhost:11434" };
+
+        var snapshot = await fixture.Service.GetSnapshotAsync(settings, CancellationToken.None);
+
+        var model = Assert.Single(snapshot.Models);
+        Assert.Equal("100% CPU", model.ProcessorUsage);
+    }
+
+    [Fact]
+    public async Task GetSnapshot_WithGpuOnlyModel_SetsProcessorUsageTo100PercentGpu()
+    {
+        var size = 2_000_000_000L;
+        var fixture = CreateFixtureWithModels(size: size, sizeVram: size);
+        var settings = new AppSettings { Endpoint = "http://localhost:11434" };
+
+        var snapshot = await fixture.Service.GetSnapshotAsync(settings, CancellationToken.None);
+
+        var model = Assert.Single(snapshot.Models);
+        Assert.Equal("100% GPU", model.ProcessorUsage);
+    }
+
+    private static SnapshotFixture CreateFixtureWithModels(long size, long sizeVram)
+    {
+        var diagnostics = new DiagnosticsLogService(Path.Combine(Path.GetTempPath(), "ElBruno.OllamaMonitor.Tests"));
+        var handler = new ModelResponseHttpMessageHandler(size, sizeVram);
+        var client = new OllamaClient(new HttpClient(handler), diagnostics);
+        var cli = new FakeOllamaCliService(new OllamaApiCallResult<bool>(true, true));
+        var service = new OllamaStatusService(
+            client,
+            cli,
+            new ProcessMetricsService(diagnostics),
+            new NvidiaSmiMetricsService(diagnostics),
+            diagnostics);
+        return new SnapshotFixture(service);
+    }
+
     private static TestFixture CreateFixture(
         OllamaApiCallResult<bool> cliStopResult,
         OllamaApiCallResult<IReadOnlyList<string>>? cliPsResult = null)
@@ -99,7 +155,7 @@ public sealed class OllamaStatusServiceTests
         var diagnostics = new DiagnosticsLogService(Path.Combine(Path.GetTempPath(), "ElBruno.OllamaMonitor.Tests"));
         var handler = new RecordingHttpMessageHandler();
         var client = new OllamaClient(new HttpClient(handler), diagnostics);
-        var cli = new FakeOllamaCliService(cliStopResult, cliPsResult ?? new OllamaApiCallResult<IReadOnlyList<string>>(true, []));
+        var cli = new FakeOllamaCliService(cliStopResult, cliPsResult);
         var service = new OllamaStatusService(
             client,
             cli,
@@ -115,15 +171,17 @@ public sealed class OllamaStatusServiceTests
 
     private sealed record TestFixture(OllamaStatusService Service, FakeOllamaCliService Cli, RecordingHttpMessageHandler Handler);
 
+    private sealed record SnapshotFixture(OllamaStatusService Service);
+
     private sealed class FakeOllamaCliService : IOllamaCliService
     {
         private readonly OllamaApiCallResult<bool> _stopResult;
         private readonly OllamaApiCallResult<IReadOnlyList<string>> _psResult;
 
-        public FakeOllamaCliService(OllamaApiCallResult<bool> stopResult, OllamaApiCallResult<IReadOnlyList<string>> psResult)
+        public FakeOllamaCliService(OllamaApiCallResult<bool> stopResult, OllamaApiCallResult<IReadOnlyList<string>>? psResult = null)
         {
             _stopResult = stopResult;
-            _psResult = psResult;
+            _psResult = psResult ?? new OllamaApiCallResult<IReadOnlyList<string>>(true, []);
         }
 
         public int StopCalls { get; private set; }
@@ -151,6 +209,52 @@ public sealed class OllamaStatusServiceTests
             Task.FromResult(new OllamaApiCallResult<bool>(true, true));
 
         public OllamaApiCallResult<bool> StartOllama() => new(true, true);
+    }
+
+    private sealed class ModelResponseHttpMessageHandler : HttpMessageHandler
+    {
+        private readonly long _size;
+        private readonly long _sizeVram;
+
+        public ModelResponseHttpMessageHandler(long size, long sizeVram)
+        {
+            _size = size;
+            _sizeVram = sizeVram;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = request.RequestUri?.AbsolutePath switch
+            {
+                "/api/ps" => new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent.Create(new
+                    {
+                        models = new[]
+                        {
+                            new
+                            {
+                                name = "test-model:latest",
+                                size = _size,
+                                size_vram = _sizeVram,
+                                expires_at = DateTimeOffset.UtcNow.AddMinutes(5),
+                                details = new { format = "gguf", family = "llama", parameter_size = "7B", quantization_level = "Q4_0" }
+                            }
+                        }
+                    })
+                },
+                "/api/version" => new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent.Create(new { version = "0.0.0-test" })
+                },
+                _ => new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent.Create(new { ok = true })
+                }
+            };
+
+            return Task.FromResult(response);
+        }
     }
 
     private sealed class RecordingHttpMessageHandler : HttpMessageHandler

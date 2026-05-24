@@ -25,7 +25,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _stateText = "Starting";
     private string _endpoint = "http://localhost:11434";
     private string _versionText = "Version: Unavailable";
-    private string _appVersionText = "v0.5.1";
+    private string _appVersionText = "v0.9.0";
     private string _lastCheckedText = "Not checked yet";
     private string _apiReachableText = "API Reachable: Unknown";
     private string _processStatusText = "Process: Detecting";
@@ -441,15 +441,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         foreach (var newModel in snapshot.Models)
         {
             currentModelNames.Add(newModel.Name);
-            var cachedModel = GetOrUpdateModel(newModel, snapshot.Resources);
-
-            if (cachedModel.IsActive && snapshot.Resources is not null)
-            {
-                cachedModel.History.AddSample(
-                    snapshot.Resources.CpuPercent ?? 0,
-                    snapshot.Resources.MemoryGb ?? 0,
-                    snapshot.Resources.GpuPercent ?? 0);
-            }
+            GetOrUpdateModel(newModel, snapshot.Resources);
         }
 
         var currentModelSet = new HashSet<string>(currentModelNames);

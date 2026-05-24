@@ -70,6 +70,30 @@ public static class StatusTextHelper
         return FormatPercent(resources.GpuPercent);
     }
 
+    public static string BuildProcessorDisplay(long? size, long? sizeVram)
+    {
+        if (size is null || size.Value == 0)
+        {
+            return "100% CPU";
+        }
+
+        var vram = sizeVram ?? 0;
+
+        if (vram <= 0)
+        {
+            return "100% CPU";
+        }
+
+        if (vram >= size.Value)
+        {
+            return "100% GPU";
+        }
+
+        var gpuPercent = (int)Math.Round(vram * 100.0 / size.Value);
+        var cpuPercent = 100 - gpuPercent;
+        return $"{cpuPercent}% CPU · {gpuPercent}% GPU";
+    }
+
     public static string FormatPercent(double? value) => value is null ? "Unavailable" : $"{value.Value:0.#}%";
 
     public static string FormatBytes(long? value)

@@ -279,7 +279,9 @@ public sealed class OllamaStatusService
             {
                 Name = model.Name,
                 Size = StatusTextHelper.FormatBytes(model.Size),
+                SizeVram = model.SizeVram,
                 Processor = BuildProcessorLabel(model.Details),
+                ProcessorUsage = StatusTextHelper.BuildProcessorDisplay(model.Size, model.SizeVram),
                 ExpiresAt = model.ExpiresAt
             })
             .ToArray();
