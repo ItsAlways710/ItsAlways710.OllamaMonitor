@@ -1,5 +1,19 @@
 # Tank History
 
+## Upcoming: Mini Monitor Optional Display (2026-06-28 planned, pending elbruno sign-off)
+
+**Context:** Neo completed comprehensive implementation plan for 3 user-requested mini monitor improvements.
+
+**Tank responsibilities:**
+- **S1 (Settings Model):** Add `ShowCpuInMiniMonitor`, `ShowMemoryInMiniMonitor`, `ShowOllamaLogsInMiniMonitor` flags to AppSettings (all false by default)
+- **S4 (Ollama Log Service):** Create hybrid `OllamaLogService` — redirect stdout when app owns `ollama serve` process, tail log file otherwise (architecture pending elbruno sign-off on 5 questions)
+
+**Status:** Plan complete. Awaiting elbruno sign-off before implementation begins. Trinity handles S2+S3+S5 (Settings UI, XAML visibility, logs panel).
+
+**Full plan:** `.squad/files/mini-monitor-optional-display-plan.md`
+
+---
+
 ## Phase 2c: Settings UX Implementation (2026-04-28 planned)
 
 ### Upcoming Ownership: Tank Validation/AppSettingsService Extensions

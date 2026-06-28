@@ -397,6 +397,50 @@ Updated `TrayIconService.cs` line 50 to call `ShowMiniMonitorWindow()` instead o
 
 ---
 
+---
+
+### Decision: Mini Monitor Optional Display (CPU/Memory/Logs)
+
+**Author:** Neo (Lead Architect)  
+**Date:** 2026-06-28  
+**Status:** Pending elbruno sign-off
+
+## Context
+
+User requested three changes to MiniMonitorWindow:
+1. CPU/Memory display optional (disabled by default)
+2. Ollama logs display optional (a setting toggle)
+3. Logs shown in collapsible panel, last 5 lines
+
+## Decision
+
+Full plan at `.squad/files/mini-monitor-optional-display-plan.md`.
+
+### Key architectural choices:
+- **New AppSettings flags:** `ShowCpuInMiniMonitor = false`, `ShowMemoryInMiniMonitor = false`, `ShowOllamaLogsInMiniMonitor = false`
+- **No new ViewModel:** Reuse `MainWindowViewModel` (already shared with MiniMonitorWindow)
+- **Visibility binding:** WPF `BooleanToVisibilityConverter` on TextBlocks and Expander
+- **Live-apply without restart:** Settings re-read each refresh cycle (~2s)
+- **Logs panel:** WPF `Expander` control, `ObservableCollection<string>` capped at 5 items
+- **Logs source (NEEDS SIGN-OFF):** Recommend hybrid `OllamaLogService` — redirect stdout when app owns `ollama serve` process, tail log file otherwise
+
+## Open Questions
+
+1. Log source: Option C (hybrid) vs Option A (file-tail only)?
+2. Ollama log file path confirmation
+3. Window resize behavior when logs panel expands
+4. Raw logs vs filtered/formatted
+5. Scope of log content (all output vs errors-only)
+
+## Ownership
+
+- **Tank:** Settings model (S1), OllamaLogService (S4)
+- **Trinity:** Settings UI (S2), XAML visibility (S3), Logs panel (S5)
+- **Switch:** Smoke tests (S6)
+- **Morpheus:** Docs update (S7)
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

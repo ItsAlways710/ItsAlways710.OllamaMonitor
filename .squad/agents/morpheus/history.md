@@ -1,5 +1,18 @@
 # Morpheus — Documentation Lead History
 
+## Upcoming: Mini Monitor Optional Display (2026-06-28 planned, pending elbruno sign-off)
+
+**Context:** Neo completed comprehensive implementation plan for 3 user-requested mini monitor improvements.
+
+**Morpheus responsibilities:**
+- **S7 (Documentation):** Update docs/configuration.md with new AppSettings flags; update docs/troubleshooting.md with guidance on optional display toggles
+
+**Status:** Plan complete. Awaiting elbruno sign-off before documentation updates begin. Tank+Trinity+Switch handle S1-S6 (settings, UI, logs, tests).
+
+**Full plan:** `.squad/files/mini-monitor-optional-display-plan.md`
+
+---
+
 ## Session Notes
 
 ### 2026-04-28 — Settings Window UI Feature Shipped (Phase 2a + 2b)

@@ -1,5 +1,20 @@
 # Trinity — Project History
 
+## Upcoming: Mini Monitor Optional Display (2026-06-28 planned, pending elbruno sign-off)
+
+**Context:** Neo completed comprehensive implementation plan for 3 user-requested mini monitor improvements.
+
+**Trinity responsibilities:**
+- **S2 (Settings UI):** Add toggles to SettingsWindow for `ShowCpuInMiniMonitor`, `ShowMemoryInMiniMonitor`, `ShowOllamaLogsInMiniMonitor`
+- **S3 (XAML Visibility):** Bind MiniMonitorWindow TextBlocks/controls to AppSettings flags using `BooleanToVisibilityConverter` (reuse `MainWindowViewModel`)
+- **S5 (Logs Panel):** Create collapsible `Expander` control with 5-line log display, populate from Tank's `OllamaLogService`
+
+**Status:** Plan complete. Awaiting elbruno sign-off before implementation begins. Tank handles S1+S4 (settings model, log service).
+
+**Full plan:** `.squad/files/mini-monitor-optional-display-plan.md`
+
+---
+
 ## Phase 2c: Settings UX Implementation (2026-04-28)
 
 ### Completed: Settings Window Implementation

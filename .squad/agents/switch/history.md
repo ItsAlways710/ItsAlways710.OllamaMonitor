@@ -1,5 +1,18 @@
 # Switch History
 
+## Upcoming: Mini Monitor Optional Display (2026-06-28 planned, pending elbruno sign-off)
+
+**Context:** Neo completed comprehensive implementation plan for 3 user-requested mini monitor improvements.
+
+**Switch responsibilities:**
+- **S6 (Smoke Tests):** Verify CPU/Memory toggles hide/show correctly, logs panel expands/collapses, live setting changes apply without restart
+
+**Status:** Plan complete. Awaiting elbruno sign-off before testing begins. Tank+Trinity handle S1-S5 (settings, UI, logs).
+
+**Full plan:** `.squad/files/mini-monitor-optional-display-plan.md`
+
+---
+
 ## Core Context
 
 Phase 1 validation framework established and approved:
@@ -11,47 +24,22 @@ Phase 1 validation framework established and approved:
 - Phase 1 doc gate requires root files + 5 technical docs + promotional set
 - GitHub Pages deployment requires one-time settings configuration
 
+## Phase 2 Learnings Archive
+
+### Key Patterns (2026-04-25 to 2026-04-28)
+
+**Smoke-Plan-as-Deliverable Pattern:** Comprehensive manual smoke test plans produced as deliverables before/after feature merge (Settings Window: 29 test cases, 8 sections, 15–20 min runtime). Recommendation: Apply to all Phase 2 UI features.
+
+**v0.5.1 Release Readiness:** 8/8 acceptance criteria PASS (sparklines, stability, metrics, tray, version, themes, model indicators, UX). Edge cases validated. 🟢 Private release approved 2026-04-25.
+
+**UI Pattern Learning:** ItemsControl + DataTemplate for model display (Trinity discovery); SolidColorBrush static resources for converter efficiency (avoiding GC pressure).
+
+---
+
 ## Learnings
 
 ### 2026-04-28 — Smoke-Plan-as-Deliverable Pattern for WPF Features
-- **Pattern:** Instead of post-implementation ad-hoc testing, produce **comprehensive manual smoke test plan** as *deliverable* before or immediately after feature merge
-- **Benefits:** 
-  - Clarifies expected behavior for developers during implementation (ambiguities surface early)
-  - Provides executable checklist for QA (15–20 min runtime per feature)
-  - Documents edge cases, validation rules, concurrency semantics in one place
-  - Captures "NEEDS CLARIFICATION" items as formal blockers for sign-off
-- **Structure:** Grouped by user workflow (Tray Menu, Read-Only Fields, Editable Fields, Validation, CLI Parity, Regression Checks, Build Semantics)
-- **Key elements:** Checkbox format for each test, expected outcomes, verification steps, appendix with test data
-- **Outcome:** `.squad/decisions/inbox/switch-settings-smoke-plan.md` created; ready for Trinity + Tank to execute post-Phase 2a/2b merge. Flagged 3 clarifications for Neo/Trinity before sign-off.
-- **Recommendation:** Apply this pattern to all Phase 2 UI features (Mini Monitor improvements, Details window polish, Theme support).
-
-### 2026-04-27 — Tray Double-Click Default Updated
-- Trinity updated systray icon double-click to open MiniMonitorWindow by default (TrayIconService.cs line 50). Phase 2a quick-win, build verified. Aligns Mini Monitor as primary interface.
-
-### 2026-04-24 — Phase 1 Validation Complete & Release Approved
-- Orchestration log written; all validation gates passed (build, CLI, tool packaging, docs, ownership)
-- Acceptance criteria met; known limitations documented
-- App ready for private release
-
-### 2026-04-25 — Live E2E Testing Against Real Ollama Instance (v0.5.1 Readiness)
-- **Build:** ✅ Release configuration (6.0s)
-- **8 acceptance criteria:** ✅ All PASS
-  - Sparklines rendering (Canvas-based, 30-sample rolling window)
-  - App launch & stability (2+ min runtime, clean exit)
-  - Resource metrics (CPU two-sample, memory, GPU graceful fallback)
-  - Tray menu (9 items, right-click functional, double-click to details)
-  - Version display (v0.5.1, all windows)
-  - Theme support (Light/Dark/System, registry-based, persisted)
-  - Model status indicators (Green/Gray bullets, IsActive detection)
-  - UX & responsiveness (smooth dragging, ~5% idle CPU, 124-140 MB RAM, 673-800 handles)
-- **Edge cases validated:** Unreachable endpoint, multiple Ollama processes, GPU unavailable, config updates
-- **CLI commands:** help, config show/set all functional
-- **Recommendation:** 🟢 READY FOR PRIVATE RELEASE
-
-### 2026-04-25 — Landing Page & GitHub Pages Verification
-- Landing page (`docs/index.html`) complete with hero, features, installation, usage, docs sections
-- All 3 screenshot assets (140-150 KB each) present in `docs/assets/`
-- HTML valid, responsive design, dark mode support, accessibility checks pass
-- GitHub Pages not yet configured; requires repository settings update (Pages > Deploy from branch > /docs)
-- Local rendering test: ✅ All sections load, images display properly
-- **Recommendation:** 🟢 APPROVED FOR DEPLOYMENT (pending GitHub Pages configuration)
+- Produces **comprehensive manual smoke test plan** as *deliverable* before/after feature merge (not ad-hoc post-implementation)
+- Benefits: Clarifies expected behavior early, provides executable QA checklist, documents edge cases/concurrency semantics, captures blocking clarifications
+- Structure: Grouped by user workflow (Tray, Fields, Validation, CLI Parity, Regression, Build)
+- **Recommendation:** Apply this pattern to all Phase 2 UI features (Mini Monitor, Details, Theme support)
