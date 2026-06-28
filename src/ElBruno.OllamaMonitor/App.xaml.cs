@@ -18,6 +18,7 @@ public partial class App : System.Windows.Application
     private readonly CliCommandParser _commandParser = new();
     private AppSettingsService? _settingsService;
     private DiagnosticsLogService? _diagnostics;
+    private OllamaLogService? _ollamaLogService;
     private HttpClient? _httpClient;
     private DispatcherTimer? _refreshTimer;
     private TrayIconService? _trayIconService;
@@ -57,6 +58,7 @@ public partial class App : System.Windows.Application
     {
         _refreshTimer?.Stop();
         _mainWindowViewModel?.Dispose();
+        _ollamaLogService?.Dispose();
         _trayIconService?.Dispose();
         _mainWindow?.PrepareForExit();
         _mainWindow?.Close();
@@ -79,7 +81,8 @@ public partial class App : System.Windows.Application
         };
 
         var ollamaClient = new OllamaClient(_httpClient, diagnostics);
-        var ollamaCliService = new OllamaCliService(diagnostics);
+        _ollamaLogService = new OllamaLogService(diagnostics);
+        var ollamaCliService = new OllamaCliService(diagnostics, _ollamaLogService);
         var processMetricsService = new ProcessMetricsService(diagnostics);
         var gpuMetricsService = new NvidiaSmiMetricsService(diagnostics);
         var statusService = new OllamaStatusService(ollamaClient, ollamaCliService, processMetricsService, gpuMetricsService, diagnostics);
@@ -91,6 +94,7 @@ public partial class App : System.Windows.Application
             statusService,
             settingsService,
             diagnostics,
+            _ollamaLogService,
             () => _mainWindow.Hide(),
             text => System.Windows.Clipboard.SetText(text),
             url => ProcessLauncher.Open(url, diagnostics));

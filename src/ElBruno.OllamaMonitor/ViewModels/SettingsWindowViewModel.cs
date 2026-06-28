@@ -23,6 +23,9 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     private bool _startMinimizedToTray;
     private bool _showFloatingWindowOnStart;
     private ModelUnloadStrategy _selectedUnloadStrategy;
+    private bool _showCpuInMiniMonitor;
+    private bool _showMemoryInMiniMonitor;
+    private bool _showOllamaLogsInMiniMonitor;
 
     public SettingsWindowViewModel(AppSettings settings, AppSettingsService settingsService)
     {
@@ -116,6 +119,24 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         set => SetProperty(ref _showFloatingWindowOnStart, value);
     }
 
+    public bool ShowCpuInMiniMonitor
+    {
+        get => _showCpuInMiniMonitor;
+        set => SetProperty(ref _showCpuInMiniMonitor, value);
+    }
+
+    public bool ShowMemoryInMiniMonitor
+    {
+        get => _showMemoryInMiniMonitor;
+        set => SetProperty(ref _showMemoryInMiniMonitor, value);
+    }
+
+    public bool ShowOllamaLogsInMiniMonitor
+    {
+        get => _showOllamaLogsInMiniMonitor;
+        set => SetProperty(ref _showOllamaLogsInMiniMonitor, value);
+    }
+
     public IReadOnlyList<ModelUnloadStrategy> UnloadStrategies { get; } = Enum.GetValues<ModelUnloadStrategy>();
 
     public ModelUnloadStrategy SelectedUnloadStrategy
@@ -135,7 +156,10 @@ public sealed class SettingsWindowViewModel : ViewModelBase
             NotificationDebounceSeconds = NotificationDebounceSeconds,
             StartMinimizedToTray = StartMinimizedToTray,
             ShowFloatingWindowOnStart = ShowFloatingWindowOnStart,
-            UnloadStrategy = SelectedUnloadStrategy
+            UnloadStrategy = SelectedUnloadStrategy,
+            ShowCpuInMiniMonitor = ShowCpuInMiniMonitor,
+            ShowMemoryInMiniMonitor = ShowMemoryInMiniMonitor,
+            ShowOllamaLogsInMiniMonitor = ShowOllamaLogsInMiniMonitor
         };
 
         await _settingsService.SaveAsync(updatedSettings, cancellationToken);
@@ -159,6 +183,10 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         NotifyModelOperationSucceeded = (_settings.NotificationEvents & NotificationEventType.ModelOperationSucceeded) != 0;
         NotifyModelOperationFailed = (_settings.NotificationEvents & NotificationEventType.ModelOperationFailed) != 0;
         NotifyOllamaStarted = (_settings.NotificationEvents & NotificationEventType.OllamaStarted) != 0;
+
+        ShowCpuInMiniMonitor = _settings.ShowCpuInMiniMonitor;
+        ShowMemoryInMiniMonitor = _settings.ShowMemoryInMiniMonitor;
+        ShowOllamaLogsInMiniMonitor = _settings.ShowOllamaLogsInMiniMonitor;
     }
 
     private NotificationEventType BuildNotificationFlags()

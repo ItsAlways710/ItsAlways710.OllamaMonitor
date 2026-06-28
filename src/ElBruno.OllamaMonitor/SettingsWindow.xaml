@@ -292,6 +292,38 @@
                     </StackPanel>
                 </GroupBox>
 
+                <!-- Mini Monitor Display Section -->
+                <GroupBox Header="📊 Mini Monitor Display"
+                          Background="#1E293B"
+                          Foreground="#FFFFFF"
+                          Padding="15"
+                          Margin="0,20,0,0">
+                    <GroupBox.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontWeight="Bold" FontSize="13" />
+                        </DataTemplate>
+                    </GroupBox.HeaderTemplate>
+                    <StackPanel>
+                        <CheckBox Content="Show CPU in Mini Monitor"
+                                  IsChecked="{Binding ShowCpuInMiniMonitor}"
+                                  Foreground="#E2E8F0"
+                                  Margin="0,0,0,10"
+                                  FontSize="12"
+                                  Cursor="Hand" />
+                        <CheckBox Content="Show Memory in Mini Monitor"
+                                  IsChecked="{Binding ShowMemoryInMiniMonitor}"
+                                  Foreground="#E2E8F0"
+                                  Margin="0,0,0,10"
+                                  FontSize="12"
+                                  Cursor="Hand" />
+                        <CheckBox Content="Show Ollama logs in Mini Monitor"
+                                  IsChecked="{Binding ShowOllamaLogsInMiniMonitor}"
+                                  Foreground="#E2E8F0"
+                                  FontSize="12"
+                                  Cursor="Hand" />
+                    </StackPanel>
+                </GroupBox>
+
                 <!-- Spacing for ScrollViewer -->
                 <TextBlock Margin="0,0,0,20" />
             </StackPanel>

@@ -15,6 +15,11 @@ public sealed record AppSettings
     public double HighMemoryThresholdGb { get; init; } = 16;
     public double HighGpuThresholdPercent { get; init; } = 85;
     
+    // Mini Monitor display toggles
+    public bool ShowCpuInMiniMonitor { get; init; } = false;
+    public bool ShowMemoryInMiniMonitor { get; init; } = false;
+    public bool ShowOllamaLogsInMiniMonitor { get; init; } = false;
+
     // Notification settings
     public bool EnableNotifications { get; init; } = true;
     public NotificationEventType NotificationEvents { get; init; } = 

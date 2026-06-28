@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         Title="Ollama Mini Monitor"
         Width="320"
-        Height="230"
+        SizeToContent="Height"
+        MinHeight="100"
         ResizeMode="NoResize"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -18,6 +19,7 @@
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <local:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
         <Style x:Key="MiniIconButtonStyle" TargetType="Button">
             <Setter Property="Foreground" Value="White" />
@@ -101,7 +103,8 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
@@ -186,16 +189,38 @@
                 </ItemsControl>
                 <TextBlock Text="{Binding CpuText}"
                            Foreground="#FFF3F4F6"
-                           Margin="0,0,0,6" />
+                           Margin="0,0,0,6"
+                           Visibility="{Binding ShowCpuInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock Text="{Binding MemoryText}"
                            Foreground="#FFF3F4F6"
-                           Margin="0,0,0,6" />
+                           Margin="0,0,0,6"
+                           Visibility="{Binding ShowMemoryInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock Text="{Binding CompactGpuText}"
                            Foreground="#FFF3F4F6"
                            TextWrapping="Wrap" />
             </StackPanel>
 
-            <Grid Grid.Row="3">
+            <Expander Grid.Row="3"
+                      Header="📋 Logs"
+                      IsExpanded="{Binding IsLogsPanelExpanded}"
+                      Visibility="{Binding ShowOllamaLogsInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}"
+                      Foreground="#FFD1D5DB"
+                      Background="Transparent"
+                      Margin="0,8,0,0">
+                <ItemsControl ItemsSource="{Binding OllamaLogLines}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"
+                                       Foreground="#FFA3A3A3"
+                                       FontSize="10"
+                                       FontFamily="Consolas"
+                                       TextTrimming="CharacterEllipsis" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+
+            <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />

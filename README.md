@@ -12,6 +12,9 @@ A tiny Windows system tray tool to monitor your local Ollama runtime.
 
 ## What's New
 
+- Added optional Mini Monitor display controls: **Show CPU**, **Show Memory**, and **Show Ollama logs** — disabled by default, configure from Settings
+- Collapsible logs panel in Mini Monitor shows the last 5 lines of Ollama server output in real-time
+- All mini-monitor toggles apply live (no restart needed)
 - Added full model lifecycle controls in the monitor UI: **Stop selected**, **Stop all**, **Pull**, **Remove**, **Copy**
 - Added **Start Ollama** action from the main window
 - Upgraded unload logic with strategy support: **Auto / Cli / Api**

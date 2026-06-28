@@ -4,13 +4,16 @@ using ElBruno.OllamaMonitor.Ollama;
 
 namespace ElBruno.OllamaMonitor.Services;
 
-public sealed class OllamaCliService : IOllamaCliService
+public sealed class OllamaCliService : IOllamaCliService, IDisposable
 {
     private readonly DiagnosticsLogService _diagnostics;
+    private readonly OllamaLogService? _ollamaLogService;
+    private Process? _ownedProcess;
 
-    public OllamaCliService(DiagnosticsLogService diagnostics)
+    public OllamaCliService(DiagnosticsLogService diagnostics, OllamaLogService? ollamaLogService = null)
     {
         _diagnostics = diagnostics;
+        _ollamaLogService = ollamaLogService;
     }
 
     public async Task<OllamaApiCallResult<IReadOnlyList<string>>> GetRunningModelsAsync(CancellationToken cancellationToken)
@@ -98,12 +101,42 @@ public sealed class OllamaCliService : IOllamaCliService
             };
             startInfo.ArgumentList.Add("serve");
 
-            var process = Process.Start(startInfo);
-            if (process is null)
+            var redirectOutput = _ollamaLogService != null;
+            if (redirectOutput)
             {
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+            }
+
+            var process = new Process { StartInfo = startInfo };
+
+            if (redirectOutput)
+            {
+                process.EnableRaisingEvents = true;
+                process.OutputDataReceived += (_, args) =>
+                {
+                    if (args.Data != null) _ollamaLogService!.OnOwnedProcessOutput(args.Data);
+                };
+                process.ErrorDataReceived += (_, args) =>
+                {
+                    if (args.Data != null) _ollamaLogService!.OnOwnedProcessOutput(args.Data);
+                };
+            }
+
+            if (!process.Start())
+            {
+                process.Dispose();
                 return new OllamaApiCallResult<bool>(false, ErrorMessage: "Failed to start `ollama serve`.");
             }
 
+            if (redirectOutput)
+            {
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                _ollamaLogService!.SetProcessOwned();
+            }
+
+            _ownedProcess = process;
             _diagnostics.WriteInfo("Started `ollama serve`.");
             return new OllamaApiCallResult<bool>(true, true);
         }
@@ -113,6 +146,8 @@ public sealed class OllamaCliService : IOllamaCliService
             return new OllamaApiCallResult<bool>(false, ErrorMessage: exception.Message);
         }
     }
+
+    public void Dispose() => _ownedProcess?.Dispose();
 
     private async Task<OllamaApiCallResult<ProcessExecutionResult>> RunOllamaCommandAsync(
         IReadOnlyList<string> arguments,

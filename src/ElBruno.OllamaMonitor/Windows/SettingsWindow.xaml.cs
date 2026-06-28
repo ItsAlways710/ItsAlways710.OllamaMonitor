@@ -42,6 +42,9 @@ public partial class SettingsWindow : Window
             ShowFloatingWindowCheckBox.IsChecked = settings.ShowFloatingWindowOnStart;
             EnableGpuMetricsCheckBox.IsChecked = settings.EnableGpuMetrics;
             EnableDiskMetricsCheckBox.IsChecked = settings.EnableDiskMetrics;
+            ShowCpuInMiniMonitorCheckBox.IsChecked = settings.ShowCpuInMiniMonitor;
+            ShowMemoryInMiniMonitorCheckBox.IsChecked = settings.ShowMemoryInMiniMonitor;
+            ShowOllamaLogsInMiniMonitorCheckBox.IsChecked = settings.ShowOllamaLogsInMiniMonitor;
             HighCpuThresholdTextBox.Text = settings.HighCpuThresholdPercent.ToString("F0");
             HighMemoryThresholdTextBox.Text = settings.HighMemoryThresholdGb.ToString("F1");
             HighGpuThresholdTextBox.Text = settings.HighGpuThresholdPercent.ToString("F0");
@@ -96,7 +99,10 @@ public partial class SettingsWindow : Window
             var updated = current with 
             { 
                 Endpoint = endpoint,
-                RefreshIntervalSeconds = refreshInterval
+                RefreshIntervalSeconds = refreshInterval,
+                ShowCpuInMiniMonitor = ShowCpuInMiniMonitorCheckBox.IsChecked == true,
+                ShowMemoryInMiniMonitor = ShowMemoryInMiniMonitorCheckBox.IsChecked == true,
+                ShowOllamaLogsInMiniMonitor = ShowOllamaLogsInMiniMonitorCheckBox.IsChecked == true
             };
 
             await _settingsService.SaveAsync(updated, CancellationToken.None);

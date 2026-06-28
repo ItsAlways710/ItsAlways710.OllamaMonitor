@@ -32,7 +32,10 @@ The file is created automatically with default values on first run.
   "highGpuThresholdPercent": 85,
   "enableNotifications": true,
   "notificationEvents": 271,
-  "notificationDebounceSeconds": 30
+  "notificationDebounceSeconds": 30,
+  "showCpuInMiniMonitor": false,
+  "showMemoryInMiniMonitor": false,
+  "showOllamaLogsInMiniMonitor": false
 }
 ```
 
@@ -194,6 +197,47 @@ Bitmask of enabled notification event types. The default includes:
 **Default:** `30`
 
 Minimum interval between repeated notifications of the same event type.
+
+### `showCpuInMiniMonitor`
+
+**Type:** `bool`  
+**Default:** `false`
+
+Whether to display CPU usage in the Mini Monitor window.
+
+- `true`: Shows CPU metrics in the Mini Monitor
+- `false`: CPU metrics hidden
+
+Changes apply live on the next refresh cycle (no restart needed).
+
+### `showMemoryInMiniMonitor`
+
+**Type:** `bool`  
+**Default:** `false`
+
+Whether to display memory usage in the Mini Monitor window.
+
+- `true`: Shows memory metrics in the Mini Monitor
+- `false`: Memory metrics hidden
+
+Changes apply live on the next refresh cycle (no restart needed).
+
+### `showOllamaLogsInMiniMonitor`
+
+**Type:** `bool`  
+**Default:** `false`
+
+Whether to display a collapsible Ollama logs panel in the Mini Monitor window.
+
+When enabled:
+- A collapsible "📋 Logs" panel appears showing the last 5 lines of Ollama server output
+- The panel starts collapsed; click to expand and view logs
+- Logs update in real-time as Ollama runs
+- Log source is hybrid:
+  - If the app started Ollama: captures redirected stdout/stderr from the `ollama serve` process
+  - If Ollama was already running: tails the Ollama log file at `%USERPROFILE%\.ollama\logs\server.log`
+
+Changes apply live on the next refresh cycle (no restart needed).
 
 ## Editing Configuration
 

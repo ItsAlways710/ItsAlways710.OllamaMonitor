@@ -2,6 +2,30 @@
 
 ## Version History
 
+### 0.10.0 — Mini Monitor Optional Display Options
+
+**Release Date:** 2026-06-28
+
+This release adds optional display controls for the Mini Monitor window, enabling users to show or hide CPU, memory, and Ollama server logs on demand.
+
+#### What's New
+
+- ✅ Optional **Show CPU in Mini Monitor** setting — displays CPU usage metrics in the Mini Monitor (disabled by default)
+- ✅ Optional **Show Memory in Mini Monitor** setting — displays memory usage metrics in the Mini Monitor (disabled by default)
+- ✅ Optional **Show Ollama logs in Mini Monitor** setting — displays a collapsible logs panel showing the last 5 lines of Ollama server output (disabled by default)
+- ✅ Logs panel uses a hybrid source: captures redirected output when the app starts Ollama, or tails the Ollama log file (`%USERPROFILE%\.ollama\logs\server.log`) when Ollama is already running
+- ✅ All three toggles apply live (no restart required)
+- ✅ Logs displayed in Consolas monospace font for readability
+
+#### Notes
+
+- All three settings are **disabled by default** for a clean, minimal Mini Monitor experience
+- Enable any or all from **Settings → Mini Monitor Display**
+- Logs panel shows up to 5 most recent lines; expands/collapses on click
+- Live-apply design allows instant visual feedback when toggling display options
+
+---
+
 ### 0.8.1 — CLI Model Management and Stop Strategy
 
 **Release Date:** 2026-05-19
@@ -252,7 +276,9 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 | Version | Release | Status | End of Support |
 |---------|---------|--------|-----------------|
-| 0.6.0   | 2026-04-25 | Active | TBD |
+| 0.10.0  | 2026-06-28 | Active | TBD |
+| 0.8.1   | 2026-05-19 | Shipped | TBD |
+| 0.6.0   | 2026-04-25 | Shipped | TBD |
 | 0.5.0   | 2026-04-24 | Shipped | TBD |
 | 0.1.0   | 2026-04-24 | Shipped | TBD |
 | 0.2.0   | TBD | Planned | — |

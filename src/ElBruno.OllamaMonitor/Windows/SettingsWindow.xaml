@@ -109,6 +109,21 @@
                           Margin="0,4,0,0"
                           ToolTip="Read-only (editable in future release)"/>
 
+                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Show CPU in Mini Monitor"/>
+                <CheckBox x:Name="ShowCpuInMiniMonitorCheckBox"
+                          Margin="0,4,0,0"
+                          ToolTip="Show CPU usage row in the Mini Monitor window"/>
+
+                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Show Memory in Mini Monitor"/>
+                <CheckBox x:Name="ShowMemoryInMiniMonitorCheckBox"
+                          Margin="0,4,0,0"
+                          ToolTip="Show Memory usage row in the Mini Monitor window"/>
+
+                <TextBlock Style="{StaticResource FieldLabelStyle}" Text="Show Ollama Logs in Mini Monitor"/>
+                <CheckBox x:Name="ShowOllamaLogsInMiniMonitorCheckBox"
+                          Margin="0,4,0,0"
+                          ToolTip="Show collapsible Ollama log panel in the Mini Monitor window"/>
+
                 <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="Alert Thresholds"/>
                 
                 <TextBlock Style="{StaticResource FieldLabelStyle}" Text="High CPU Threshold (%)"/>

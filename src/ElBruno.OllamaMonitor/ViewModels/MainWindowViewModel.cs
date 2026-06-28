@@ -13,6 +13,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly OllamaStatusService _statusService;
     private readonly AppSettingsService _settingsService;
     private readonly DiagnosticsLogService _diagnostics;
+    private readonly IOllamaLogService _ollamaLogService;
     private readonly Action _hideWindow;
     private readonly Action<string> _copyToClipboard;
     private readonly Action<string> _openUrl;
@@ -46,11 +47,16 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _copyTargetModelName = string.Empty;
     private OllamaModelSnapshot? _selectedModel;
     private string? _errorText;
+    private bool _showCpuInMiniMonitor;
+    private bool _showMemoryInMiniMonitor;
+    private bool _showOllamaLogsInMiniMonitor;
+    private bool _isLogsPanelExpanded;
 
     public MainWindowViewModel(
         OllamaStatusService statusService,
         AppSettingsService settingsService,
         DiagnosticsLogService diagnostics,
+        IOllamaLogService ollamaLogService,
         Action hideWindow,
         Action<string> copyToClipboard,
         Action<string> openUrl)
@@ -58,12 +64,16 @@ public sealed class MainWindowViewModel : ViewModelBase
         _statusService = statusService;
         _settingsService = settingsService;
         _diagnostics = diagnostics;
+        _ollamaLogService = ollamaLogService;
         _hideWindow = hideWindow;
         _copyToClipboard = copyToClipboard;
         _openUrl = openUrl;
         _notificationService = new WindowsNotificationService(diagnostics);
 
         Models = new ObservableCollection<OllamaModelSnapshot>();
+        OllamaLogLines = new ObservableCollection<string>();
+
+        _ollamaLogService.LogLineReceived += AppendLogLine;
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(CancellationToken.None));
         CopyStatusCommand = new RelayCommand(CopyStatus);
         OpenEndpointCommand = new RelayCommand(OpenEndpoint);
@@ -90,6 +100,52 @@ public sealed class MainWindowViewModel : ViewModelBase
     public event EventHandler<OllamaMonitorSnapshot>? SnapshotUpdated;
 
     public ObservableCollection<OllamaModelSnapshot> Models { get; }
+    public ObservableCollection<string> OllamaLogLines { get; }
+
+    public bool ShowCpuInMiniMonitor
+    {
+        get => _showCpuInMiniMonitor;
+        private set => SetProperty(ref _showCpuInMiniMonitor, value);
+    }
+
+    public bool ShowMemoryInMiniMonitor
+    {
+        get => _showMemoryInMiniMonitor;
+        private set => SetProperty(ref _showMemoryInMiniMonitor, value);
+    }
+
+    public bool ShowOllamaLogsInMiniMonitor
+    {
+        get => _showOllamaLogsInMiniMonitor;
+        private set
+        {
+            if (SetProperty(ref _showOllamaLogsInMiniMonitor, value))
+            {
+                if (value)
+                {
+                    _ollamaLogService.Start();
+                    System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+                    {
+                        OllamaLogLines.Clear();
+                        foreach (var line in _ollamaLogService.RecentLines)
+                            OllamaLogLines.Add(line);
+                        while (OllamaLogLines.Count > 5)
+                            OllamaLogLines.RemoveAt(0);
+                    });
+                }
+                else
+                {
+                    _ollamaLogService.Stop();
+                }
+            }
+        }
+    }
+
+    public bool IsLogsPanelExpanded
+    {
+        get => _isLogsPanelExpanded;
+        set => SetProperty(ref _isLogsPanelExpanded, value);
+    }
 
     public AsyncRelayCommand RefreshCommand { get; }
     public RelayCommand CopyStatusCommand { get; }
@@ -292,6 +348,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             var settings = await _settingsService.LoadAsync(cancellationToken);
             _notificationService.SetDebounceSeconds(settings.NotificationDebounceSeconds);
+            ShowCpuInMiniMonitor = settings.ShowCpuInMiniMonitor;
+            ShowMemoryInMiniMonitor = settings.ShowMemoryInMiniMonitor;
+            ShowOllamaLogsInMiniMonitor = settings.ShowOllamaLogsInMiniMonitor;
 
             var snapshot = await _statusService.GetSnapshotAsync(settings, cancellationToken);
             CheckAndNotifyStateChanges(snapshot, settings);
@@ -812,6 +871,17 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public void Dispose()
     {
+        _ollamaLogService.LogLineReceived -= AppendLogLine;
         _notificationService?.Dispose();
+    }
+
+    private void AppendLogLine(string line)
+    {
+        System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            OllamaLogLines.Add(line.Trim());
+            while (OllamaLogLines.Count > 5)
+                OllamaLogLines.RemoveAt(0);
+        });
     }
 }
