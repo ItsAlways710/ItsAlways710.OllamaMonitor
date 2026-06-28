@@ -399,45 +399,411 @@ Updated `TrayIconService.cs` line 50 to call `ShowMiniMonitorWindow()` instead o
 
 ---
 
-### Decision: Mini Monitor Optional Display (CPU/Memory/Logs)
+### Decision: OllamaLogService Contract and Hybrid Source Approach
 
-**Author:** Neo (Lead Architect)  
+**Author:** Tank (Platform Developer)  
 **Date:** 2026-06-28  
-**Status:** Pending elbruno sign-off
+**Status:** Implemented — approved by elbruno (Option C hybrid, raw log lines, all Ollama server output, log path %USERPROFILE%\.ollama\logs\server.log)
+
+---
 
 ## Context
 
-User requested three changes to MiniMonitorWindow:
-1. CPU/Memory display optional (disabled by default)
-2. Ollama logs display optional (a setting toggle)
-3. Logs shown in collapsible panel, last 5 lines
+Mini Monitor Optional Display plan (`.squad/files/mini-monitor-optional-display-plan.md`) requires a new service that captures Ollama server log lines for display in the mini monitor panel (S4, S5).
 
-## Decision
+No prior log-capture service existed. `OllamaCliService.StartOllama()` did not redirect stdout/stderr. `DiagnosticsLogService` is the app's own internal logger, not an Ollama consumer.
 
-Full plan at `.squad/files/mini-monitor-optional-display-plan.md`.
+---
 
-### Key architectural choices:
-- **New AppSettings flags:** `ShowCpuInMiniMonitor = false`, `ShowMemoryInMiniMonitor = false`, `ShowOllamaLogsInMiniMonitor = false`
-- **No new ViewModel:** Reuse `MainWindowViewModel` (already shared with MiniMonitorWindow)
-- **Visibility binding:** WPF `BooleanToVisibilityConverter` on TextBlocks and Expander
-- **Live-apply without restart:** Settings re-read each refresh cycle (~2s)
-- **Logs panel:** WPF `Expander` control, `ObservableCollection<string>` capped at 5 items
-- **Logs source (NEEDS SIGN-OFF):** Recommend hybrid `OllamaLogService` — redirect stdout when app owns `ollama serve` process, tail log file otherwise
+## Decision: Hybrid Log Source (Option C)
 
-## Open Questions
+Two modes, resolved at runtime:
 
-1. Log source: Option C (hybrid) vs Option A (file-tail only)?
-2. Ollama log file path confirmation
-3. Window resize behavior when logs panel expands
-4. Raw logs vs filtered/formatted
-5. Scope of log content (all output vs errors-only)
+### Mode 1 — Process-Owned (app started Ollama via `StartOllama`)
+- `OllamaCliService.StartOllama()` now optionally redirects `stdout` + `stderr` when an `OllamaLogService` reference is injected.
+- Subscribes to `OutputDataReceived` / `ErrorDataReceived` events and forwards each line to `OllamaLogService.OnOwnedProcessOutput(line)`.
+- Calls `OllamaLogService.SetProcessOwned()` to suppress file-tail polling.
 
-## Ownership
+### Mode 2 — External Ollama (already running, not started by this app)
+- Polls `%USERPROFILE%\.ollama\logs\server.log` every 2 seconds.
+- Opens with `FileShare.ReadWrite | FileShare.Delete` to handle file locking gracefully.
+- Tracks last-read byte offset; on each poll reads only new content.
+- Detects log rotation/truncation (file shrinks) and resets offset to 0.
 
-- **Tank:** Settings model (S1), OllamaLogService (S4)
-- **Trinity:** Settings UI (S2), XAML visibility (S3), Logs panel (S5)
-- **Switch:** Smoke tests (S6)
-- **Morpheus:** Docs update (S7)
+---
+
+## Public Interface
+
+```csharp
+// ElBruno.OllamaMonitor.Services.IOllamaLogService
+public interface IOllamaLogService
+{
+    event Action<string>? LogLineReceived;  // fired on background thread; callers must dispatch to UI
+    IReadOnlyList<string> RecentLines { get; }  // snapshot of last ≤5 lines; thread-safe
+    void Start();  // idempotent; begin capture
+    void Stop();   // idempotent; stop capture
+}
+```
+
+---
+
+## Internal Surface (for OllamaCliService wiring only)
+
+```csharp
+// On OllamaLogService concrete class — NOT on the interface
+internal void SetProcessOwned();                // switches to process-owned mode, stops file polling
+internal void OnOwnedProcessOutput(string? line); // forwards a line from the managed process
+```
+
+---
+
+## Ring Buffer
+
+- Max 5 most-recent lines.
+- Protected by `Lock _syncRoot`. Thread-safe for concurrent writes (process events) and reads (UI bindings).
+- `LogLineReceived` event fired after appending; handler exceptions are caught and logged as warnings.
+
+---
+
+## Log File Path
+
+```
+%USERPROFILE%\.ollama\logs\server.log
+```
+
+Resolved via:
+```csharp
+Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+             ".ollama", "logs", "server.log")
+```
+
+---
+
+## Log Content
+
+- **Raw lines** from Ollama server output (no filtering, no timestamp stripping).
+- **All Ollama server output** (stdout + stderr merged) — approved by elbruno.
+
+---
+
+## Registration
+
+`App.xaml.cs` (`LaunchTrayApplicationAsync`):
+```csharp
+_ollamaLogService = new OllamaLogService(diagnostics);
+var ollamaCliService = new OllamaCliService(diagnostics, _ollamaLogService);
+```
+
+Disposed in `OnExit` via `_ollamaLogService?.Dispose()`.
+
+---
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `Configuration/AppSettings.cs` | +3 bool props: `ShowCpuInMiniMonitor`, `ShowMemoryInMiniMonitor`, `ShowOllamaLogsInMiniMonitor` (all `= false`) |
+| `Services/IOllamaLogService.cs` | New interface (as above) |
+| `Services/OllamaLogService.cs` | New concrete service (hybrid implementation) |
+| `Services/OllamaCliService.cs` | Optional `OllamaLogService?` ctor param; `StartOllama` refactored; `IDisposable` added |
+| `App.xaml.cs` | `_ollamaLogService` field; wired into `OllamaCliService`; disposed on exit |
+
+---
+
+## Handoff Notes for Trinity (S5)
+
+- Consume `IOllamaLogService` from App's `_ollamaLogService` field — pass it into `MainWindowViewModel` constructor.
+- Call `ollamaLogService.Start()` when `ShowOllamaLogsInMiniMonitor` becomes `true`; `Stop()` when it goes `false`.
+- Subscribe to `LogLineReceived` on the service; marshal to UI thread via `Application.Current.Dispatcher.InvokeAsync` before updating `OllamaLogLines` observable collection.
+- `RecentLines` provides an initial snapshot on startup to pre-populate the collection.
+- `LogLineReceived` fires on a background thread (timer callback or process event thread) — always dispatch before touching WPF-bound collections.
+
+---
+
+### Decision: Mini Monitor UI / VM Changes (S2, S3, S5)
+
+**Author:** Trinity (Desktop Developer)  
+**Date:** 2026-06-28  
+**Status:** Implemented — build green (0 errors)
+
+---
+
+## Summary
+
+Implemented slices S2 (Settings UI), S3 (CPU/Memory visibility), and S5 (collapsible logs panel) of the Mini Monitor Optional Display plan.
+
+---
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `ViewModels/MainWindowViewModel.cs` | +IOllamaLogService field+param; +ShowCpuInMiniMonitor; +ShowMemoryInMiniMonitor; +ShowOllamaLogsInMiniMonitor; +IsLogsPanelExpanded; +OllamaLogLines; AppendLogLine; RefreshAsync live-apply; Dispose unsubscribe |
+| `App.xaml.cs` | Pass `_ollamaLogService` as 4th arg to MainWindowViewModel constructor |
+| `MiniMonitorWindow.xaml` | SizeToContent="Height"; BooleanToVisibilityConverter resource; Visibility bindings on CpuText+MemoryText; Expander row (Row 3); footer shifted to Row 4; Row 2 changed from * to Auto |
+| `SettingsWindow.xaml` (root) | New "Mini Monitor Display" GroupBox with 3 bound checkboxes |
+| `ViewModels/SettingsWindowViewModel.cs` | +ShowCpuInMiniMonitor; +ShowMemoryInMiniMonitor; +ShowOllamaLogsInMiniMonitor — loaded in LoadSettings(), saved in SaveAsync() with |
+| `Windows/SettingsWindow.xaml` | +3 editable checkboxes under Metrics Collection |
+| `Windows/SettingsWindow.xaml.cs` | LoadSettingsAsync loads 3 new checkboxes; OnSaveClicked includes them in `with` expression |
+
+---
+
+## New VM Members (MainWindowViewModel)
+
+```csharp
+public bool ShowCpuInMiniMonitor { get; private set; }
+public bool ShowMemoryInMiniMonitor { get; private set; }
+public bool ShowOllamaLogsInMiniMonitor { get; private set; }  // lazy-starts/stops IOllamaLogService
+public bool IsLogsPanelExpanded { get; set; }
+public ObservableCollection<string> OllamaLogLines { get; }    // max 5 lines, UI-thread safe
+```
+
+---
+
+## Binding Summary (MiniMonitorWindow.xaml)
+
+| Control | Binding | Notes |
+|---------|---------|-------|
+| CpuText TextBlock | `Visibility="{Binding ShowCpuInMiniMonitor, Converter=BoolToVisibilityConverter}"` | Hides row when false |
+| MemoryText TextBlock | `Visibility="{Binding ShowMemoryInMiniMonitor, Converter=BoolToVisibilityConverter}"` | Hides row when false |
+| Expander | `Visibility="{Binding ShowOllamaLogsInMiniMonitor, ...}"` + `IsExpanded="{Binding IsLogsPanelExpanded}"` | Entire panel hidden when flag false |
+| ItemsControl inside Expander | `ItemsSource="{Binding OllamaLogLines}"` | Raw log lines, Consolas 10px |
+
+---
+
+## Live-Apply
+
+All three flags re-read from `AppSettingsService.LoadAsync()` on every `RefreshAsync()` tick (every 2s by default). No app restart required. `ShowOllamaLogsInMiniMonitor` setter lazily starts/stops `IOllamaLogService`.
+
+---
+
+## Notes for Switch (Testing)
+
+- Default: all three flags are `false` → CPU, Memory, and Logs panel are hidden in mini monitor.
+- Enable "Show CPU in Mini Monitor" in Settings → CpuText row appears within next refresh (~2s).
+- Enable "Show Ollama Logs in Mini Monitor" → Expander appears (collapsed). Expand to see up to 5 raw log lines. Lines update in real-time.
+- Disable logs toggle while expanded → entire Expander hides immediately on next refresh.
+- Window grows vertically when Expander is expanded; shrinks on collapse (`SizeToContent="Height"`).
+- Settings can be saved from either the root SettingsWindow (dark theme, ViewModel-bound) or Windows/SettingsWindow (light theme, code-behind). Both paths persist the 3 new flags.
+
+---
+
+### Decision: Mini Monitor Unit Tests (Slice S6)
+
+**Author:** Switch (Quality Engineer)  
+**Date:** 2026-06-28  
+**Status:** Done — 34/34 tests passing
+
+---
+
+## Summary
+
+Unit tests added for Slice S6 of the Mini Monitor Optional Display feature. Covers the two testable units: `AppSettings` defaults/deserialization and the `OllamaLogService` ring buffer.
+
+---
+
+## Tests Added
+
+### AppSettingsTests.cs — 4 new tests (file extended)
+
+| Test | Assertion |
+|------|-----------|
+| `Defaults_ShowCpuInMiniMonitor_IsFalse` | `new AppSettings().ShowCpuInMiniMonitor == false` |
+| `Defaults_ShowMemoryInMiniMonitor_IsFalse` | `new AppSettings().ShowMemoryInMiniMonitor == false` |
+| `Defaults_ShowOllamaLogsInMiniMonitor_IsFalse` | `new AppSettings().ShowOllamaLogsInMiniMonitor == false` |
+| `Deserialization_MissingMiniMonitorKeys_DefaultsToFalse` | JSON payload without the 3 new keys deserializes all three to `false` via `System.Text.Json` (camelCase policy, matching `AppSettingsService`) |
+
+### OllamaLogServiceTests.cs — 11 new tests (new file)
+
+| Test | Assertion |
+|------|-----------|
+| `RecentLines_IsEmpty_OnCreation` | Service starts with empty buffer |
+| `RingBuffer_SingleLine_ContainsThatLine` | One line in → one line out |
+| `RingBuffer_FiveLines_ContainsAllFive` | Exactly 5 lines fit |
+| `RingBuffer_ExceedsCapacity_RetainsLastFiveOnly` | 7 lines in → 5 lines out |
+| `RingBuffer_ExceedsCapacity_OldestLinesDropped` | Lines 1 and 2 evicted when 7 fed |
+| `RingBuffer_ExceedsCapacity_PreservesInsertionOrder` | Surviving lines are `["line3".."line7"]` in order |
+| `LogLineReceived_FiredForEachLine` | Event fires once per `OnOwnedProcessOutput` call |
+| `LogLineReceived_FiredWithCorrectLineValue` | Event payload equals the appended line |
+| `OnOwnedProcessOutput_NullLine_IsIgnored` | `null` is silently dropped |
+| `OnOwnedProcessOutput_EmptyLine_IsIgnored` | `""` is silently dropped |
+| `RecentLines_ReturnsSnapshot_NotLiveReference` | Snapshot taken before a second append is unaffected by subsequent writes |
+| `LogLineReceived_ExceptionInHandler_DoesNotPropagateToAppendLine` | Bad subscriber exception is caught; line is still appended |
+
+---
+
+## Testability Seam
+
+**Seam chosen:** `internal void OnOwnedProcessOutput(string? line)` on `OllamaLogService`.
+
+- This is the same codepath exercised at runtime when `OllamaCliService` owns the process and forwards stdout/stderr lines. It directly calls `AppendLine`, exercising the ring buffer and event dispatch.
+- **No file I/O, no timer, no real Ollama process** required.
+- Exposed via `[assembly: InternalsVisibleTo("ElBruno.OllamaMonitor.Tests")]` added to `src/ElBruno.OllamaMonitor/AssemblyInfo.cs`. Runtime behavior and public surface are unchanged.
+
+---
+
+## Final Test Count
+
+```
+Passed: 34  |  Failed: 0  |  Skipped: 0
+```
+
+Run command:
+```
+dotnet test tests/ElBruno.OllamaMonitor.Tests/ElBruno.OllamaMonitor.Tests.csproj -c Debug --nologo
+```
+
+---
+
+## Gaps — Not Unit-Testable
+
+| Area | Reason | Coverage Path |
+|------|--------|---------------|
+| `MainWindowViewModel` visibility bindings (`ShowCpuInMiniMonitor`, `ShowMemoryInMiniMonitor`, `ShowOllamaLogsInMiniMonitor`) | Requires WPF dispatcher; no MVVM test harness present | Manual smoke test (Trinity notes) |
+| `MiniMonitorWindow.xaml` Visibility/SizeToContent behavior | WPF window activation required | Manual smoke test |
+| Settings persistence round-trip via `AppSettingsService.SaveAsync`/`LoadAsync` | `AppPaths.SettingsFilePath` writes to `%LOCALAPPDATA%`; path not injectable | JSON deserialization test covers the `System.Text.Json` defaults path; file I/O path relies on existing manual smoke |
+| `OllamaLogService` file-tail polling (Mode 2 — external Ollama) | Log file path hard-coded; poller fires on 2s timer | Not unit-tested; timer-based polling is out of scope per task constraints |
+
+---
+
+## Acceptance Criteria Coverage
+
+- ✅ `ShowCpuInMiniMonitor` defaults to `false`
+- ✅ `ShowMemoryInMiniMonitor` defaults to `false`
+- ✅ `ShowOllamaLogsInMiniMonitor` defaults to `false`
+- ✅ Missing JSON keys → defaults (legacy settings file safe)
+- ✅ Ring buffer capped at 5 lines
+- ✅ Oldest lines dropped when cap exceeded
+- ✅ Insertion order preserved
+- ✅ `LogLineReceived` fires per line
+- ✅ Null/empty lines silently ignored
+- ✅ Bad subscriber exception does not corrupt the ring buffer
+
+---
+
+### Decision: Mini Monitor Optional Display Documentation (S7)
+
+**Author:** Morpheus (Documentation Lead)  
+**Date:** 2026-06-28  
+**Status:** Complete — docs updated and verified
+
+---
+
+## Summary
+
+Slice S7 documentation updates for the three new mini-monitor optional display options implemented by Tank (S1, S4) and Trinity (S2, S3, S5).
+
+---
+
+## Changes Made
+
+### 1. docs/configuration.md
+
+#### Default Configuration JSON
+- Added three new settings with `false` defaults:
+  - `showCpuInMiniMonitor`
+  - `showMemoryInMiniMonitor`
+  - `showOllamaLogsInMiniMonitor`
+
+#### Settings Reference Section
+Added complete documentation for each new setting:
+
+| Setting | Type | Default | Purpose |
+|---------|------|---------|---------|
+| `showCpuInMiniMonitor` | bool | false | Display CPU metrics in Mini Monitor |
+| `showMemoryInMiniMonitor` | bool | false | Display memory metrics in Mini Monitor |
+| `showOllamaLogsInMiniMonitor` | bool | false | Display collapsible logs panel (last 5 lines) |
+
+**Key details documented:**
+- Live-apply design (no restart required)
+- Changes visible on next refresh cycle (~2 seconds)
+- Logs panel hybrid source behavior:
+  - Redirected stdout/stderr when app starts Ollama
+  - Tails `%USERPROFILE%\.ollama\logs\server.log` for external Ollama instances
+
+### 2. docs/release-notes.md
+
+#### New Version Entry: 0.10.0
+- **Release Date:** 2026-06-28
+- **Type:** Minor feature release
+
+#### Feature Descriptions
+- ✅ Optional Show CPU in Mini Monitor (disabled by default)
+- ✅ Optional Show Memory in Mini Monitor (disabled by default)
+- ✅ Optional Show Ollama logs in Mini Monitor with collapsible panel
+- ✅ Hybrid log source (process redirect + file tail)
+- ✅ Live-apply behavior (no restart)
+- ✅ Monospace Consolas font for logs readability
+
+#### Support Timeline Updated
+- 0.10.0 now listed as Active (2026-06-28)
+- Older versions shifted to Shipped status
+
+### 3. README.md
+
+#### "What's New" Section Updated
+- Highlighted mini-monitor display options at the top
+- Emphasized live-apply behavior
+- Mentioned collapsible logs panel with 5-line limit
+- Kept other features intact (model lifecycle, unload strategy, etc.)
+
+---
+
+## Documentation Philosophy Applied
+
+**Consistent with Morpheus learnings:**
+- Practical, developer-focused tone
+- Avoided jargon; explained hybrid log source clearly
+- Emphasized user-facing benefits (live-apply, real-time updates)
+- All three settings documented as "disabled by default" to set expectations
+- Included concrete paths (`%USERPROFILE%\.ollama\logs\server.log`)
+- Links to Configuration Guide for deeper details
+
+---
+
+## Files Modified
+
+| File | Changes |
+|------|---------|
+| `docs/configuration.md` | +5 new settings sections; updated Default Configuration JSON |
+| `docs/release-notes.md` | +v0.10.0 release entry; updated Support Timeline |
+| `README.md` | Updated "What's New" section |
+| `.squad/agents/morpheus/history.md` | Appended learnings entry |
+
+---
+
+## Verification
+
+All documentation changes verified:
+- ✅ Settings keys match AppSettings.cs (Tank's S1 decision)
+- ✅ Hybrid log source behavior documented per Tank's IOllamaLogService (S4 decision)
+- ✅ UI descriptions match Trinity's XAML/VM bindings (S2, S3, S5 decisions)
+- ✅ Live-apply behavior documented (Trinity's RefreshAsync integration)
+- ✅ Release date matches current_datetime (2026-06-28)
+- ✅ Tone consistent with existing Morpheus documentation standards
+- ✅ No invented features; only documented implemented behavior
+
+---
+
+## Handoff Notes
+
+**For elbruno (Project Lead):**
+- Review release notes entry for tone/accuracy
+- Verify version number (0.10.0 is next after current 0.8.1)
+- Confirm release date (2026-06-28)
+
+**For future releases:**
+- Template established for "What's New" + release notes + settings documentation
+- Configuration documentation pattern proven; reuse for future settings
+- Live-apply behavior should be highlighted in docs for any similar features
+
+---
+
+## Next Steps
+
+- ✅ Documentation complete
+- Ready for Team validation (Switch/Neo review)
+- Ready for public release
 
 ---
 

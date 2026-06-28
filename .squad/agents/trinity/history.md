@@ -1,17 +1,17 @@
 # Trinity — Project History
 
-## Upcoming: Mini Monitor Optional Display (2026-06-28 planned, pending elbruno sign-off)
+## Completed: Mini Monitor Optional Display (2026-06-28)
 
-**Context:** Neo completed comprehensive implementation plan for 3 user-requested mini monitor improvements.
+**Status:** ✅ Complete, build verified (0 errors)
 
-**Trinity responsibilities:**
-- **S2 (Settings UI):** Add toggles to SettingsWindow for `ShowCpuInMiniMonitor`, `ShowMemoryInMiniMonitor`, `ShowOllamaLogsInMiniMonitor`
-- **S3 (XAML Visibility):** Bind MiniMonitorWindow TextBlocks/controls to AppSettings flags using `BooleanToVisibilityConverter` (reuse `MainWindowViewModel`)
-- **S5 (Logs Panel):** Create collapsible `Expander` control with 5-line log display, populate from Tank's `OllamaLogService`
+**Context:** elbruno approved defaults: logs panel grows window vertically, raw log lines, all server output. Tank delivered S1+S4 (AppSettings bools + OllamaLogService).
 
-**Status:** Plan complete. Awaiting elbruno sign-off before implementation begins. Tank handles S1+S4 (settings model, log service).
+**Trinity responsibilities completed:**
+- **S2 (Settings UI):** Added 3 checkboxes to both SettingsWindow versions (root dark-theme + Windows/ light-theme code-behind)
+- **S3 (XAML Visibility):** CpuText + MemoryText bound to ShowCpuInMiniMonitor / ShowMemoryInMiniMonitor via BooleanToVisibilityConverter
+- **S5 (Logs Panel):** Expander in Row 3 with OllamaLogLines ItemsControl; SizeToContent="Height"; IOllamaLogService injected + wired
 
-**Full plan:** `.squad/files/mini-monitor-optional-display-plan.md`
+**Full details:** `.squad/decisions/inbox/trinity-mini-monitor-ui.md`
 
 ---
 
@@ -115,6 +115,39 @@ Created WPF Settings Window per Neo's specification (`.squad/decisions/inbox/neo
 ---
 
 ## Learnings
+
+### Mini Monitor Optional Display (2026-06-28)
+
+#### New VM Properties Added to MainWindowViewModel
+- `ShowCpuInMiniMonitor` (bool, private set) — read from settings each RefreshAsync cycle
+- `ShowMemoryInMiniMonitor` (bool, private set) — read from settings each RefreshAsync cycle
+- `ShowOllamaLogsInMiniMonitor` (bool, private set) — triggers Start()/Stop() on IOllamaLogService; seeds OllamaLogLines from RecentLines on transition to true
+- `IsLogsPanelExpanded` (bool, public set) — two-way bound to Expander.IsExpanded in XAML
+- `OllamaLogLines` (ObservableCollection<string>) — max 5 lines, trimmed in AppendLogLine; seeded from IOllamaLogService.RecentLines on enable
+
+#### Converter Used
+`BooleanToVisibilityConverter` — WPF built-in, declared in `MiniMonitorWindow.xaml` Window.Resources as `<BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />`. No extra namespace required (already in default WPF XAML namespace).
+
+#### Live-Apply Mechanism
+Settings flags are re-read from `AppSettingsService.LoadAsync()` on every `RefreshAsync()` call (which runs on the DispatcherTimer tick, default every 2s). The three bool properties are set unconditionally each cycle; `SetProperty` ensures PropertyChanged fires only when the value actually changes. `ShowOllamaLogsInMiniMonitor`'s setter handles lazy Start/Stop of the log service on state transitions.
+
+#### IOllamaLogService Consumption
+- Field `_ollamaLogService` of type `IOllamaLogService` injected via constructor.
+- `LogLineReceived` subscribed in constructor; unsubscribed in `Dispose()`.
+- `AppendLogLine` marshals to UI thread via `System.Windows.Application.Current?.Dispatcher.BeginInvoke(...)` (note: fully qualified to avoid ambiguity with `System.Windows.Forms.Application`).
+- OllamaLogService passed from `App.xaml.cs` (field `_ollamaLogService`) as new 4th constructor arg to MainWindowViewModel.
+
+#### SizeToContent Decision
+Chose `SizeToContent="Height"` with fixed `Width="320"` on MiniMonitorWindow.
+- Removed `Height="230"` and the `<RowDefinition Height="*" />` (changed to `Auto`).
+- Added 5th Auto row for footer after inserting the Expander row.
+- Window grows vertically when Expander is expanded; collapses back when closed.
+- `WindowStyle="None"` + `AllowsTransparency="True"` + drag-by-Border all remain compatible.
+
+#### SettingsWindowViewModel Pattern
+Three new bool properties (`ShowCpuInMiniMonitor`, `ShowMemoryInMiniMonitor`, `ShowOllamaLogsInMiniMonitor`) added following the existing `StartMinimizedToTray` pattern: private backing field + `SetProperty` setter, loaded from `_settings.*` in `LoadSettings()`, included in `_settings with { }` expression in `SaveAsync()`.
+
+---
 
 ### Window-with-Form Pattern
 - **Single-column layout:** Use StackPanel inside ScrollViewer for vertical stacking
@@ -380,6 +413,20 @@ To verify the change:
    - Removed private `ValidateEndpoint(string endpoint)` method
    - Removed private `ValidateRefreshInterval(int seconds)` method
    - Removed TODO comment block
+
+---
+
+## [SUMMARIZED ARCHIVE] Earlier Sessions (detailed in archive)
+
+This history accumulated learnings from Phase 1 (2026-04-24) through Phase 2c (2026-06-13). Key themes:
+- WPF UI patterns (hide-instead-of-close, async loading, data binding)
+- Settings Window lifecycle and validation integration (Tank/Trinity collaboration)
+- MiniMonitor expansion (CPU, Memory, Logs display options)
+- Live-apply behavior without restart
+- Cross-window coordination via App.xaml.cs
+- Build verification and error resolution
+
+For earlier context, refer to archived summary or session logs.
 
 ### Build Verification
 
