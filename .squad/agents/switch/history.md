@@ -38,6 +38,26 @@ Phase 1 validation framework established and approved:
 
 ## Learnings
 
+### 2026-06-28 — S6 Mini Monitor Unit Tests (Slice S6)
+
+**Test files added:**
+- `tests/ElBruno.OllamaMonitor.Tests/AppSettingsTests.cs` — extended with 4 new tests:
+  - `Defaults_ShowCpuInMiniMonitor_IsFalse`
+  - `Defaults_ShowMemoryInMiniMonitor_IsFalse`
+  - `Defaults_ShowOllamaLogsInMiniMonitor_IsFalse`
+  - `Deserialization_MissingMiniMonitorKeys_DefaultsToFalse` (JSON round-trip with legacy payload)
+- `tests/ElBruno.OllamaMonitor.Tests/OllamaLogServiceTests.cs` — 11 new tests for ring buffer and event behavior.
+
+**Seam used for OllamaLogService:** `internal void OnOwnedProcessOutput(string? line)` — the same handler OllamaCliService calls when it owns the process. Exposed to the test project via `[assembly: InternalsVisibleTo("ElBruno.OllamaMonitor.Tests")]` added to `src/ElBruno.OllamaMonitor/AssemblyInfo.cs`. No runtime behavior changed.
+
+**InternalsVisibleTo added:** `src/ElBruno.OllamaMonitor/AssemblyInfo.cs`
+
+**Final test count:** 34 passed, 0 failed, 0 skipped.
+
+**WPF VM / window coverage gap:** `MainWindowViewModel` and `MiniMonitorWindow` WPF bindings are not unit-testable (require WPF dispatcher + window activation). These must be validated by manual smoke test only — no unit seam available without a UI test harness.
+
+---
+
 ### 2026-04-28 — Smoke-Plan-as-Deliverable Pattern for WPF Features
 - Produces **comprehensive manual smoke test plan** as *deliverable* before/after feature merge (not ad-hoc post-implementation)
 - Benefits: Clarifies expected behavior early, provides executable QA checklist, documents edge cases/concurrency semantics, captures blocking clarifications

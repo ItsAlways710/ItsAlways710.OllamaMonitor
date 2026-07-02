@@ -46,6 +46,20 @@
 - **Team outcomes:** Tank delivered platform, Trinity delivered WPF integration, Morpheus delivered all documentation, Switch approved for private release.
 - **Next: Phase 2** — DI container, MVVM framework, unit tests, logging framework, remote monitoring.
 
+### 2026-06-28 — Mini Monitor Optional Display Plan
+
+**Plan issued:** `.squad/files/mini-monitor-optional-display-plan.md`
+
+**Key findings:**
+- **MiniMonitorWindow shares `MainWindowViewModel`** — no separate VM (App.xaml.cs:99 sets DataContext).
+- **Settings service:** `Configuration/AppSettingsService.cs` — JSON file, reload-before-save, auto-creates defaults on missing keys.
+- **No existing Ollama log source:** `OllamaCliService.StartOllama()` does NOT redirect stdout/stderr. No file tailing or log streaming exists. This is the primary gap for the logs feature.
+- **Recommended log approach:** Hybrid `OllamaLogService` (redirect when we own process, tail `%USERPROFILE%\.ollama\logs\server.log` otherwise).
+- **Live-apply feasible:** `RefreshAsync()` already loads settings each cycle; new visibility bools can update without restart.
+- **Backward compat:** C# record defaults handle missing JSON keys gracefully.
+
+**Decision file:** `.squad/decisions/inbox/neo-mini-monitor-optional-display.md`
+
 ### 2025-01-24 — Sparkline Persistence Fix
 
 - **Problem:** Mini monitor window sparklines invisible because model metrics History was lost on each refresh cycle.

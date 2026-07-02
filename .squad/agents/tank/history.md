@@ -37,6 +37,53 @@
 
 ## Learnings
 
+### 2026-06-28 — S1 + S4 Mini Monitor Optional Display (settings model + OllamaLogService)
+
+**S1 — Settings keys added to `Configuration/AppSettings.cs`:**
+- `public bool ShowCpuInMiniMonitor { get; init; } = false;`
+- `public bool ShowMemoryInMiniMonitor { get; init; } = false;`
+- `public bool ShowOllamaLogsInMiniMonitor { get; init; } = false;`
+- Placement: inserted before the existing `// Notification settings` block.
+- No migration code needed: `AppSettingsService` uses `System.Text.Json` with `PropertyNamingPolicy.CamelCase`; missing keys resolve to property-initializer defaults (`false`). Verified in AppSettingsService.cs LoadAsync — existing pattern confirmed.
+- JSON keys (camelCase): `showCpuInMiniMonitor`, `showMemoryInMiniMonitor`, `showOllamaLogsInMiniMonitor`.
+
+**S4 — OllamaLogService public interface (`Services/IOllamaLogService.cs`):**
+```csharp
+public interface IOllamaLogService
+{
+    event Action<string>? LogLineReceived;
+    IReadOnlyList<string> RecentLines { get; }   // most recent ≤ 5 lines
+    void Start();   // idempotent; starts log capture
+    void Stop();    // idempotent; stops log capture
+}
+```
+
+**S4 — OllamaLogService concrete class (`Services/OllamaLogService.cs`):**
+- Implements `IOllamaLogService` + `IDisposable`.
+- Hybrid source (Option C, approved by elbruno):
+  1. **Process-owned path:** OllamaCliService calls `ollamaLogService.SetProcessOwned()` + `ollamaLogService.OnOwnedProcessOutput(line)` when it redirects `ollama serve` stdout/stderr. File polling is suppressed.
+  2. **File-tail path (default):** Polls `%USERPROFILE%\.ollama\logs\server.log` every 2 s using `System.Threading.Timer`. Reads only new bytes from last offset. Handles file rotation/truncation by resetting offset. Opens with `FileShare.ReadWrite | FileShare.Delete`.
+- Log file path: `Path.Combine(Environment.GetFolderPath(SpecialFolder.UserProfile), ".ollama", "logs", "server.log")`.
+- Ring buffer: `List<string>` capped at 5, protected by `Lock _syncRoot`. Thread-safe.
+- Fail-safe: `IOException`/`UnauthorizedAccessException` caught and logged via `DiagnosticsLogService.WriteWarning`; never throws to callers.
+- `Start()` is idempotent; begins file polling unless already in process-owned mode.
+- `Stop()` / `Dispose()` disposes the polling timer.
+
+**S4 — OllamaCliService changes (`Services/OllamaCliService.cs`):**
+- Added optional `OllamaLogService? ollamaLogService = null` constructor parameter (non-breaking).
+- Added `Process? _ownedProcess` field.
+- Implements `IDisposable` (`Dispose()` disposes `_ownedProcess`).
+- `StartOllama()` — when `_ollamaLogService != null`: sets `RedirectStandardOutput/Error = true`, `EnableRaisingEvents = true`, subscribes to `OutputDataReceived`/`ErrorDataReceived`, calls `BeginOutputReadLine()`/`BeginErrorReadLine()`, then calls `_ollamaLogService.SetProcessOwned()`. The return type/contract is unchanged.
+
+**S4 — Registration in `App.xaml.cs`:**
+- Added `OllamaLogService? _ollamaLogService` field.
+- In `LaunchTrayApplicationAsync`: `_ollamaLogService = new OllamaLogService(diagnostics)` before `ollamaCliService`.
+- `OllamaCliService` now receives `_ollamaLogService` as second constructor arg.
+- `OnExit`: calls `_ollamaLogService?.Dispose()` before other disposals.
+- **Trinity note:** `_ollamaLogService` is available from App; pass it into `MainWindowViewModel` constructor when wiring S5. The `IOllamaLogService` interface is the stable surface to consume — call `Start()` when logs are enabled, subscribe to `LogLineReceived` to append to `OllamaLogLines` on the UI dispatcher.
+
+**Build status:** ✅ Success — `dotnet build src/ElBruno.OllamaMonitor/ElBruno.OllamaMonitor.csproj -c Debug` — 0 errors, 2 pre-existing warnings (unrelated).
+
 ### 2026-04-28 — Settings File Auto-Creation Verification
 
 - Bruno requested: "if no setting is available create one with the default values (the ones that we are using now)"

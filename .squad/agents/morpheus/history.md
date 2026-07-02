@@ -84,6 +84,31 @@
 
 ## Learnings
 
+### Mini Monitor Optional Display Documentation (2026-06-28)
+
+**Settings documented:**
+- `ShowCpuInMiniMonitor` (bool, default false) — Optional CPU metrics in Mini Monitor
+- `ShowMemoryInMiniMonitor` (bool, default false) — Optional memory metrics in Mini Monitor
+- `ShowOllamaLogsInMiniMonitor` (bool, default false) — Optional collapsible logs panel showing last 5 lines
+
+**Key points for future doc updates:**
+- All three settings are live-apply (no restart required; changes visible on next refresh ~2s)
+- Log source is hybrid: redirected stdout/stderr when app starts Ollama, or tails `%USERPROFILE%\.ollama\logs\server.log` for external instances
+- Logs panel shows monospace Consolas 10px for readability
+- All disabled by default for minimal Mini Monitor UX
+
+**Files updated:**
+1. `docs/configuration.md` — Added 3 new settings to Default Configuration JSON, documented each in Settings Reference section
+2. `docs/release-notes.md` — Added v0.10.0 release entry (2026-06-28) with feature descriptions; updated Support Timeline
+3. `README.md` — Updated "What's New" section to highlight mini-monitor display options and live-apply behavior
+
+**Documentation decisions:**
+- Kept tone practical and user-focused (consistent with existing docs)
+- Emphasized "disabled by default" to set expectations
+- Documented hybrid log source behavior for clarity (redirected vs file-tailed)
+- Mentioned live-apply in both configuration docs and release notes to highlight UX benefit
+- Release notes describe 5-line limit, Consolas font, and real-time updates
+
 ### Architecture Patterns
 - **State-driven UI:** OllamaMonitorState enum drives tray icon color and UX
 - **Service aggregation:** OllamaStatusService combines Ollama API, process metrics, GPU metrics
