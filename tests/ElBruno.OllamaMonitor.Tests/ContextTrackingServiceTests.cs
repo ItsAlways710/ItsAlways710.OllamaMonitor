@@ -131,6 +131,32 @@ public sealed class ContextTrackingServiceTests : IDisposable
     }
 
     [Fact]
+    public void SlotReleaseLine_FinalizesTaskWithFinalTokensAndClearsSpeed()
+    {
+        Inject("slot   operator(): id 0 | task 12504 | new prompt, n_ctx_slot = 188416, task.n_tokens = 90559, n_keep = 4");
+        Inject("slot print_timing: id 0 | task 12504 | n_gen = 934, tg = 33.08 t/s");
+
+        Inject("slot release: id 0 | task 12504 | stop processing: n_tokens = 113271, truncated = 0");
+
+        var sample = Assert.Single(_sut.GetSnapshot());
+        Assert.Equal(113271, sample.UsedTokens);
+        Assert.Null(sample.TokensPerSecond);
+    }
+
+    [Fact]
+    public void SlotReleaseLine_WithoutTokenCount_KeepsLastKnownUsage()
+    {
+        Inject("slot   operator(): id 0 | task 12505 | new prompt, n_ctx_slot = 4096, task.n_tokens = 64");
+        Inject("slot print_timing: id 0 | task 12505 | tg = 99.9 t/s");
+
+        Inject("slot release: id 0 | task 12505");
+
+        var sample = Assert.Single(_sut.GetSnapshot());
+        Assert.Equal(64, sample.UsedTokens);
+        Assert.Null(sample.TokensPerSecond);
+    }
+
+    [Fact]
     public void Dispose_UnsubscribesFromLogEvents()
     {
         _sut.Dispose();

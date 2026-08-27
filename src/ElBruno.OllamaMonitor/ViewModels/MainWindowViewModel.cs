@@ -39,6 +39,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _compactGpuText = "GPU: Unavailable";
     private string _gpuMemoryText = "VRAM: Unavailable";
     private string _contextText = "Context: Unavailable";
+    private IReadOnlyList<string> _miniContextLines = new[] { "Context: Unavailable" };
     private string _modelsSummaryText = "No loaded models.";
     private string _primaryModelText = "Model: No loaded models";
     private string _compactModelsText = "Models: No loaded models";
@@ -256,6 +257,12 @@ public sealed class MainWindowViewModel : ViewModelBase
     {
         get => _contextText;
         private set => SetProperty(ref _contextText, value);
+    }
+
+    public IReadOnlyList<string> MiniContextLines
+    {
+        get => _miniContextLines;
+        private set => SetProperty(ref _miniContextLines, value);
     }
 
     public string ModelsSummaryText
@@ -498,6 +505,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         CompactGpuText = $"GPU: {StatusTextHelper.BuildCompactGpuSummary(snapshot.Resources)}";
         GpuMemoryText = $"VRAM: {StatusTextHelper.FormatBytes(snapshot.Resources?.VramUsedBytes)} / {StatusTextHelper.FormatBytes(snapshot.Resources?.VramTotalBytes)}";
         ContextText = $"Context: {StatusTextHelper.BuildContextSummary(snapshot.ContextWindows)}";
+        MiniContextLines = StatusTextHelper.BuildMiniModelContextLines(snapshot.Models, snapshot.ContextWindows);
         ModelsSummaryText = snapshot.Models.Count == 0
             ? "No loaded models."
             : $"{snapshot.Models.Count} loaded model(s).";

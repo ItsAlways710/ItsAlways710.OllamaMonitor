@@ -195,14 +195,22 @@
                            Foreground="#FFF3F4F6"
                            Margin="0,0,0,6"
                            Visibility="{Binding ShowMemoryInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
-                <TextBlock Text="{Binding ContextText}"
-                           Foreground="#FFF3F4F6"
-                           TextWrapping="Wrap"
-                           Margin="0,0,0,6"
-                           Visibility="{Binding ShowContextInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock Text="{Binding CompactGpuText}"
                            Foreground="#FFF3F4F6"
-                           TextWrapping="Wrap" />
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,6" />
+                <ItemsControl ItemsSource="{Binding MiniContextLines}"
+                              Margin="0,0,0,6"
+                              Visibility="{Binding ShowContextInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"
+                                       Foreground="#FFF3F4F6"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,1,0,0" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
 
             <Expander Grid.Row="3"

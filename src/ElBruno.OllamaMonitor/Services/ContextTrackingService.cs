@@ -8,6 +8,12 @@ namespace ElBruno.OllamaMonitor.Services;
 /// Tracks per-task context-window usage parsed from Ollama server log lines:
 ///   slot   operator(): id 0 | task N | new prompt, n_ctx_slot = 188416, task.n_tokens = X
 ///   slot print_timing: id 0 | task N | ... tg = X.XX t/s
+///   slot release: id 0 | task N | stop processing: n_tokens = Y
+/// A task is created on its "new prompt" line, refreshed on "print_timing" lines, and
+/// finalized on its "slot release" line, whose final n_tokens become the task's last
+/// measured usage. The task then stays in the store (speed cleared, since the run is
+/// over) so its Mini Monitor line remains visible for as long as its model is loaded;
+/// pruning happens here only after a long inactivity window (StaleAfter).
 /// Subscribes to OllamaLogService.LogLineReceived (both process-owned and
 /// file-polling modes fire it). State is keyed by the "task" id in the line,
 /// since OLLAMA_MAX_LOADED_MODELS &gt; 1 allows concurrent tasks. Thread-safe.
@@ -18,6 +24,8 @@ public sealed class ContextTrackingService : IDisposable
     private static readonly Regex SlotTokensRegex = new(@"\bn_ctx_slot\s*[=]?\s*(\d+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex UsedTokensRegex = new(@"\btask\.n_tokens\s*[=]?\s*(\d+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex TokensPerSecondRegex = new(@"\btg\s*[=]?\s*(\d+(?:\.\d+)?)\s*t/s", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex ReleaseRegex = new(@"^\s*slot\s+release:\s*id\s*\d+\s*\|\s*task\s*(\d+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex ReleaseTokensRegex = new(@"\bn_tokens\s*[=]?\s*(\d+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     /// <summary>Entries with no log activity for this long are dropped from snapshots.</summary>
     private static readonly TimeSpan StaleAfter = TimeSpan.FromMinutes(30);
@@ -62,6 +70,31 @@ public sealed class ContextTrackingService : IDisposable
     {
         if (string.IsNullOrWhiteSpace(line))
         {
+            return;
+        }
+
+        // Explicit end-of-run signal: a release line carries the run's final n_tokens.
+        // Finalize the task with those values and clear its speed - the task stays in the
+        // store (its line remains visible while its model is loaded); it is pruned later
+        // by the StaleAfter window when reading a snapshot, not here.
+        var releaseMatch = ReleaseRegex.Match(line);
+        if (releaseMatch.Success && int.TryParse(releaseMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var releasedTaskId))
+        {
+            lock (_syncRoot)
+            {
+                if (_tasks.TryGetValue(releasedTaskId, out var releasedState))
+                {
+                    var finalTokens = ReleaseTokensRegex.Match(line);
+                    if (finalTokens.Success && int.TryParse(finalTokens.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var finalUsed))
+                    {
+                        releasedState.UsedTokens = finalUsed;
+                    }
+
+                    releasedState.TokensPerSecond = null;
+                    releasedState.LastUpdated = DateTimeOffset.UtcNow;
+                }
+            }
+
             return;
         }
 
