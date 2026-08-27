@@ -9,10 +9,12 @@
     <RootNamespace>ElBruno.OllamaMonitor</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <PackageId>ElBruno.OllamaMonitor</PackageId>
-    <Title>ElBruno.OllamaMonitor</Title>
-    <Description>Windows-first Ollama monitor global tool launcher and configuration CLI.</Description>
-    <Authors>Bruno Capuano</Authors>
-    <Company>ElBruno</Company>
+    <Title>ItsAlways710.OllamaMonitor</Title>
+    <AssemblyTitle>ItsAlways710.OllamaMonitor</AssemblyTitle>
+    <Product>ItsAlways710.OllamaMonitor</Product>
+    <Description>Windows-first Ollama monitor global tool launcher and configuration CLI. Fork of ElBruno.OllamaMonitor by Bruno Capuano.</Description>
+    <Authors>ItsAlways710, Bruno Capuano (original)</Authors>
+    <Company>ItsAlways710</Company>
     <PackageTags>ollama;monitoring;dotnet-tool;windows</PackageTags>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>ollamamon</ToolCommandName>
@@ -20,7 +22,7 @@
     <PackageIcon>package-icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/elbruno/ElBruno.OllamaMonitor</RepositoryUrl>
+    <RepositoryUrl>https://github.com/ItsAlways710/ElBruno.OllamaMonitor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <Version>0.10.0</Version>

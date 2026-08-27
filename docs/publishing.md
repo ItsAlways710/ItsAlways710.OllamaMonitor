@@ -19,7 +19,7 @@ This guide covers how the `ElBruno.OllamaMonitor` global tool package is publish
 
    | Field | Value |
    |-------|-------|
-   | Repository owner | `elbruno` |
+   | Repository owner | `ItsAlways710` |
    | Repository name | `ElBruno.OllamaMonitor` |
    | Workflow file | `publish.yml` |
    | Environment | `release` |

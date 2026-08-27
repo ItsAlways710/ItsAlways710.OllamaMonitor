@@ -144,7 +144,7 @@ public sealed class TrayIconService : IDisposable
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                FileName = "https://github.com/elbruno/ElBruno.OllamaMonitor",
+                FileName = "https://github.com/ItsAlways710/ElBruno.OllamaMonitor",
                 UseShellExecute = true
             });
         }

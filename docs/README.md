@@ -1,10 +1,10 @@
-# ElBruno.OllamaMonitor Documentation
+# ItsAlways710.OllamaMonitor Documentation
 
-Welcome to the ElBruno.OllamaMonitor documentation hub. This folder contains guides, configuration references, and troubleshooting resources.
+Welcome to the ItsAlways710.OllamaMonitor documentation hub — a fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by Bruno Capuano.
 
 ## 🌐 Landing Page
 
-Start here: **[ElBruno.OllamaMonitor Landing Page](index.html)** — Overview, features, installation, and usage.
+Start here: **[ItsAlways710.OllamaMonitor Landing Page](index.html)** — Overview, features, installation, and usage.
 
 ## 📚 Documentation
 
@@ -36,7 +36,7 @@ Looking for social media posts, blog content, or image prompts?
 
 ## 🔗 Quick Links
 
-- **GitHub**: https://github.com/elbruno/ElBruno.OllamaMonitor
+- **GitHub**: https://github.com/ItsAlways710/ElBruno.OllamaMonitor (fork of [elbruno/ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor))
 - **NuGet Package**: https://www.nuget.org/packages/ElBruno.OllamaMonitor
 - **Ollama**: https://ollama.ai
 - **Author**: https://github.com/elbruno
@@ -45,7 +45,7 @@ Looking for social media posts, blog content, or image prompts?
 
 1. Check the **[Troubleshooting](troubleshooting.md)** guide
 2. Review **[Configuration Guide](configuration.md)** for common settings
-3. Open an issue on **[GitHub](https://github.com/elbruno/ElBruno.OllamaMonitor/issues)**
+3. Open an issue on **[GitHub](https://github.com/ItsAlways710/ElBruno.OllamaMonitor/issues)**
 
 ---
 

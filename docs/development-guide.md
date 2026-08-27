@@ -13,7 +13,7 @@
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/ElBruno/ElBruno.OllamaMonitor.git
+git clone https://github.com/ItsAlways710/ElBruno.OllamaMonitor.git
 cd ElBruno.OllamaMonitor
 ```
 

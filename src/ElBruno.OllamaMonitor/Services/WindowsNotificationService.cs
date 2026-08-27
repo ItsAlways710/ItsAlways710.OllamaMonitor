@@ -63,7 +63,7 @@ public sealed class WindowsNotificationService : IDisposable
                 ExpirationTime = DateTimeOffset.UtcNow.AddSeconds(10)
             };
 
-            ToastNotificationManager.CreateToastNotifier("ElBruno.OllamaMonitor").Show(toast);
+            ToastNotificationManager.CreateToastNotifier("ItsAlways710.OllamaMonitor").Show(toast);
             _diagnostics.WriteInfo($"Notification shown: {eventType} - {title}");
         }
         catch (Exception ex)

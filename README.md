@@ -1,8 +1,10 @@
-# ElBruno.OllamaMonitor
+# ItsAlways710.OllamaMonitor
+
+A fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by [Bruno Capuano](https://github.com/elbruno), maintained by [ItsAlways710](https://github.com/ItsAlways710).
 
 [![NuGet](https://img.shields.io/nuget/v/ElBruno.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ElBruno.OllamaMonitor)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/ElBruno.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ElBruno.OllamaMonitor)
-[![Publish to NuGet](https://github.com/elbruno/ElBruno.OllamaMonitor/actions/workflows/publish.yml/badge.svg)](https://github.com/elbruno/ElBruno.OllamaMonitor/actions/workflows/publish.yml)
+[![Publish to NuGet](https://github.com/ItsAlways710/ElBruno.OllamaMonitor/actions/workflows/publish.yml/badge.svg)](https://github.com/ItsAlways710/ElBruno.OllamaMonitor/actions/workflows/publish.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 
@@ -24,7 +26,7 @@ A tiny Windows system tray tool to monitor your local Ollama runtime.
 
 ## What It Does
 
-ElBruno.OllamaMonitor sits in your Windows system tray and tells you:
+ItsAlways710.OllamaMonitor sits in your Windows system tray and tells you:
 
 - **Is Ollama running?** A glance at the tray icon shows you the status.
 - **Is a model loaded?** See what's currently active.
@@ -39,7 +41,7 @@ Perfect for:
 
 ## Demo
 
-![ElBruno.OllamaMonitor demo](images/ollamanitor-demo01.gif)
+![ItsAlways710.OllamaMonitor demo](images/ollamanitor-demo01.gif)
 
 ## Installation
 
@@ -58,7 +60,7 @@ ollamamon
 ### From Source
 
 ```bash
-git clone https://github.com/elbruno/ElBruno.OllamaMonitor.git
+git clone https://github.com/ItsAlways710/ElBruno.OllamaMonitor.git
 cd ElBruno.OllamaMonitor
 dotnet build src/ElBruno.OllamaMonitor/
 dotnet run --project src/ElBruno.OllamaMonitor/
@@ -144,11 +146,11 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 
 ## Support
 
-Found a bug or have a feature request? Open an issue on GitHub.
+Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/ItsAlways710/ElBruno.OllamaMonitor/issues).
 
 Questions about Ollama? Check the [Ollama documentation](https://github.com/ollama/ollama).
 
-## About the Author
+## About the Original Project
 
 **Made with ❤️ by [Bruno Capuano (ElBruno)](https://github.com/elbruno)**
 
@@ -157,3 +159,7 @@ Questions about Ollama? Check the [Ollama documentation](https://github.com/olla
 - 🔗 **LinkedIn**: [linkedin.com/in/elbruno](https://linkedin.com/in/elbruno)
 - 𝕏 **Twitter**: [twitter.com/elbruno](https://twitter.com/elbruno)
 - 🎙️ **Podcast**: [notienenombre.com](https://notienenombre.com)
+
+## About This Fork
+
+Forked and maintained by [ItsAlways710](https://github.com/ItsAlways710) — [github.com/ItsAlways710/ElBruno.OllamaMonitor](https://github.com/ItsAlways710/ElBruno.OllamaMonitor).
