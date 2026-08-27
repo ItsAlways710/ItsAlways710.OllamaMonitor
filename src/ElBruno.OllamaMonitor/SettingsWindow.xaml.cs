@@ -5,17 +5,9 @@ namespace ElBruno.OllamaMonitor;
 
 public partial class SettingsWindow : Window
 {
-    private readonly SettingsWindowViewModel? _viewModel;
-
     public SettingsWindow()
     {
         InitializeComponent();
-    }
-
-    protected override void OnClosed(EventArgs e)
-    {
-        base.OnClosed(e);
-        _viewModel?.Dispose();
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -28,6 +20,10 @@ public partial class SettingsWindow : Window
         if (DataContext is SettingsWindowViewModel viewModel)
         {
             await viewModel.SaveAsync(CancellationToken.None);
+            // This window is only ever shown via ShowDialog() from
+            // OpenSettingsAsync, so DialogResult is legal to set.
+            DialogResult = true;
+
             Close();
         }
     }

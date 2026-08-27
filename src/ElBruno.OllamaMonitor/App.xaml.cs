@@ -8,7 +8,6 @@ using ElBruno.OllamaMonitor.Helpers;
 using ElBruno.OllamaMonitor.Ollama;
 using ElBruno.OllamaMonitor.Services;
 using ElBruno.OllamaMonitor.ViewModels;
-using ElBruno.OllamaMonitor.Windows;
 
 namespace ElBruno.OllamaMonitor;
 
@@ -25,7 +24,6 @@ public partial class App : System.Windows.Application
     private TrayIconService? _trayIconService;
     private MainWindow? _mainWindow;
     private MiniMonitorWindow? _miniMonitorWindow;
-    private SettingsWindow? _settingsWindow;
     private MainWindowViewModel? _mainWindowViewModel;
 
     protected override async void OnStartup(StartupEventArgs e)
@@ -65,7 +63,6 @@ public partial class App : System.Windows.Application
         _mainWindow?.Close();
         _miniMonitorWindow?.PrepareForExit();
         _miniMonitorWindow?.Close();
-        _settingsWindow?.Close();
         _httpClient?.Dispose();
         _shutdownTokenSource.Cancel();
         _shutdownTokenSource.Dispose();
@@ -94,7 +91,6 @@ public partial class App : System.Windows.Application
 
         _mainWindow = new MainWindow();
         _miniMonitorWindow = new MiniMonitorWindow();
-        _settingsWindow = new SettingsWindow();
         _mainWindowViewModel = new MainWindowViewModel(
             statusService,
             settingsService,
@@ -113,8 +109,7 @@ public partial class App : System.Windows.Application
             _mainWindowViewModel,
             settingsService,
             diagnostics,
-            ExitApplication,
-            ShowSettingsWindow);
+            ExitApplication);
 
         _refreshTimer = new DispatcherTimer
         {
@@ -144,18 +139,6 @@ public partial class App : System.Windows.Application
         Shutdown();
     }
 
-    public void ShowSettingsWindow()
-    {
-        if (_settingsWindow is null)
-            return;
-
-        if (!_settingsWindow.IsVisible)
-        {
-            _settingsWindow.Show();
-        }
-
-        _settingsWindow.Activate();
-    }
 
     private void RegisterGlobalExceptionHandlers(DiagnosticsLogService diagnostics)
     {
@@ -163,6 +146,13 @@ public partial class App : System.Windows.Application
         {
             diagnostics.WriteError("Unhandled dispatcher exception.", args.Exception);
             args.Handled = true;
+        };
+        // WinForms surfaces unhandled handler exceptions (e.g. tray menu
+        // clicks) via this event instead of the default .NET dialog; route
+        // them to the diagnostics log.
+        System.Windows.Forms.Application.ThreadException += (_, args) =>
+        {
+            diagnostics.WriteError("Unhandled WinForms thread exception.", args.Exception);
         };
 
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>

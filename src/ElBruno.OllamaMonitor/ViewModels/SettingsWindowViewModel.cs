@@ -192,6 +192,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         NotifyModelOperationFailed = (_settings.NotificationEvents & NotificationEventType.ModelOperationFailed) != 0;
         NotifyOllamaStarted = (_settings.NotificationEvents & NotificationEventType.OllamaStarted) != 0;
 
+        ShowCpuInMiniMonitor = _settings.ShowCpuInMiniMonitor;
         ShowMemoryInMiniMonitor = _settings.ShowMemoryInMiniMonitor;
         ShowContextInMiniMonitor = _settings.ShowContextInMiniMonitor;
         ShowOllamaLogsInMiniMonitor = _settings.ShowOllamaLogsInMiniMonitor;
