@@ -149,3 +149,113 @@ public sealed class OllamaLogServiceTests : IDisposable
         Assert.Equal("safe", _sut.RecentLines[0]);
     }
 }
+
+/// <summary>
+/// Tests for OllamaLogService log file path resolution between the known Ollama log locations.
+/// Seam: OllamaLogService.ResolveLogPath (internal static).
+/// </summary>
+public sealed class OllamaLogPathResolutionTests
+{
+    [Fact]
+    public void ResolveLogPath_BothExist_ReturnsMostRecentlyWritten()
+    {
+        using var dir = NewTempDir();
+
+        var cli = Path.Combine(dir.Path, "cli.log");
+        var desktop = Path.Combine(dir.Path, "desktop.log");
+        File.WriteAllText(cli, "older");
+        File.WriteAllText(desktop, "newer");
+        File.SetLastWriteTimeUtc(cli, DateTimeOffset.UtcNow.AddMinutes(-5).UtcDateTime);
+
+        Assert.Equal(desktop, OllamaLogService.ResolveLogPath([cli, desktop]));
+    }
+
+    [Fact]
+    public void ResolveLogPath_FirstCandidateNewer_ReturnsFirstCandidate()
+    {
+        using var dir = NewTempDir();
+
+        var cli = Path.Combine(dir.Path, "cli.log");
+        var desktop = Path.Combine(dir.Path, "desktop.log");
+        File.WriteAllText(desktop, "older");
+        File.WriteAllText(cli, "newer");
+        File.SetLastWriteTimeUtc(desktop, DateTimeOffset.UtcNow.AddMinutes(-5).UtcDateTime);
+
+        Assert.Equal(cli, OllamaLogService.ResolveLogPath([cli, desktop]));
+    }
+
+    [Fact]
+    public void ResolveLogPath_NoneExist_ReturnsFirstCandidate()
+    {
+        using var dir = NewTempDir();
+
+        var first = Path.Combine(dir.Path, "does-not-exist-1.log");
+        var second = Path.Combine(dir.Path, "does-not-exist-2.log");
+
+        Assert.Equal(first, OllamaLogService.ResolveLogPath([first, second]));
+    }
+
+    [Fact]
+    public void ResolveLogPath_EmptyCandidates_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() => OllamaLogService.ResolveLogPath([]));
+    }
+
+    private static TempDir NewTempDir()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "ElBruno.OllamaMonitor.Tests", Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(path);
+        return new TempDir(path);
+    }
+
+    private sealed class TempDir : IDisposable
+    {
+        public TempDir(string path) => Path = path;
+        public string Path { get; }
+        public void Dispose() => Directory.Delete(Path, recursive: true);
+    }
+}
+
+/// <summary>
+/// Tests real file polling of OllamaLogService: appended lines are picked up by the poller,
+/// lines that exist before Start are skipped (seek-to-end), and the ring buffer is fed.
+/// </summary>
+public sealed class OllamaLogFilePollingTests
+{
+    [Fact]
+    public void Start_AppendsToFile_NewLineReceived_PreexistingSkipped()
+    {
+        var logDir = Path.Combine(Path.GetTempPath(), "ElBruno.OllamaMonitor.Tests", Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(logDir);
+        var logFile = Path.Combine(logDir, "server.log");
+        File.WriteAllText(logFile, "seeded line before start\n");
+
+        try
+        {
+            using var sut = new OllamaLogService(new DiagnosticsLogService(logDir), logFile);
+            using var caught = new ManualResetEventSlim(false);
+            string? received = null;
+            sut.LogLineReceived += line =>
+            {
+                received = line;
+                caught.Set();
+            };
+
+            sut.Start();
+
+            const string appendedLine = "slot print_timing: id  0 | task 1 | n_gen = 10, tg = 12.5 t/s";
+            File.AppendAllText(logFile, "\r\n" + appendedLine + "\r\n");
+
+            Assert.True(caught.Wait(TimeSpan.FromSeconds(10)), "Poller did not deliver the appended line within 10 s.");
+
+            Assert.Equal(appendedLine, received);
+            var recent = sut.RecentLines;
+            Assert.Contains(appendedLine, recent);
+            Assert.DoesNotContain("seeded line before start", recent);
+        }
+        finally
+        {
+            Directory.Delete(logDir, recursive: true);
+        }
+    }
+}

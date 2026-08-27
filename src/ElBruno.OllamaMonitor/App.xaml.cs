@@ -19,6 +19,7 @@ public partial class App : System.Windows.Application
     private AppSettingsService? _settingsService;
     private DiagnosticsLogService? _diagnostics;
     private OllamaLogService? _ollamaLogService;
+    private ContextTrackingService? _contextTrackingService;
     private HttpClient? _httpClient;
     private DispatcherTimer? _refreshTimer;
     private TrayIconService? _trayIconService;
@@ -56,8 +57,8 @@ public partial class App : System.Windows.Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _refreshTimer?.Stop();
         _mainWindowViewModel?.Dispose();
+        _contextTrackingService?.Dispose();
         _ollamaLogService?.Dispose();
         _trayIconService?.Dispose();
         _mainWindow?.PrepareForExit();
@@ -82,10 +83,14 @@ public partial class App : System.Windows.Application
 
         var ollamaClient = new OllamaClient(_httpClient, diagnostics);
         _ollamaLogService = new OllamaLogService(diagnostics);
+        // Context-window tracking depends on log capture, so it runs regardless of
+        // the "Show Ollama logs in Mini Monitor" toggle.
+        _ollamaLogService.Start();
+        _contextTrackingService = new ContextTrackingService(_ollamaLogService);
         var ollamaCliService = new OllamaCliService(diagnostics, _ollamaLogService);
         var processMetricsService = new ProcessMetricsService(diagnostics);
         var gpuMetricsService = new NvidiaSmiMetricsService(diagnostics);
-        var statusService = new OllamaStatusService(ollamaClient, ollamaCliService, processMetricsService, gpuMetricsService, diagnostics);
+        var statusService = new OllamaStatusService(ollamaClient, ollamaCliService, processMetricsService, gpuMetricsService, _contextTrackingService, diagnostics);
 
         _mainWindow = new MainWindow();
         _miniMonitorWindow = new MiniMonitorWindow();

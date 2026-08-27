@@ -195,6 +195,11 @@
                            Foreground="#FFF3F4F6"
                            Margin="0,0,0,6"
                            Visibility="{Binding ShowMemoryInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock Text="{Binding ContextText}"
+                           Foreground="#FFF3F4F6"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,6"
+                           Visibility="{Binding ShowContextInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock Text="{Binding CompactGpuText}"
                            Foreground="#FFF3F4F6"
                            TextWrapping="Wrap" />

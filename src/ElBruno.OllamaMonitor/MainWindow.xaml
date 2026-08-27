@@ -195,6 +195,12 @@
                                        FontSize="11" />
                             <TextBlock Text="{Binding DiskWriteText}"
                                        FontSize="11" />
+                            <TextBlock Text="{Binding ContextText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FF2DD4BF" />
                         </StackPanel>
                     </GroupBox>
 

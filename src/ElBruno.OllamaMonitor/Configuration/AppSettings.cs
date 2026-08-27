@@ -18,6 +18,7 @@ public sealed record AppSettings
     // Mini Monitor display toggles
     public bool ShowCpuInMiniMonitor { get; init; } = false;
     public bool ShowMemoryInMiniMonitor { get; init; } = false;
+    public bool ShowContextInMiniMonitor { get; init; } = false;
     public bool ShowOllamaLogsInMiniMonitor { get; init; } = false;
 
     // Notification settings

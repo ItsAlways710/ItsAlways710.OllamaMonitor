@@ -35,6 +35,7 @@ The file is created automatically with default values on first run.
   "notificationDebounceSeconds": 30,
   "showCpuInMiniMonitor": false,
   "showMemoryInMiniMonitor": false,
+  "showContextInMiniMonitor": false,
   "showOllamaLogsInMiniMonitor": false
 }
 ```
@@ -220,6 +221,18 @@ Whether to display memory usage in the Mini Monitor window.
 - `true`: Shows memory metrics in the Mini Monitor
 - `false`: Memory metrics hidden
 
+### `showContextInMiniMonitor`
+
+**Type:** `bool`  
+**Default:** `false`
+
+Whether to display live context-window usage in the Mini Monitor window.
+
+Values are parsed from Ollama's server log (`n_ctx_slot`, `task.n_tokens`, and `tg` tokens/second lines), tracked per concurrent task:
+
+- `true`: Shows a "Context: …" line with per-task tokens used, total slot, percentage, and tokens/second
+- `false`: Context metrics hidden
+
 Changes apply live on the next refresh cycle (no restart needed).
 
 ### `showOllamaLogsInMiniMonitor`
@@ -235,7 +248,8 @@ When enabled:
 - Logs update in real-time as Ollama runs
 - Log source is hybrid:
   - If the app started Ollama: captures redirected stdout/stderr from the `ollama serve` process
-  - If Ollama was already running: tails the Ollama log file at `%USERPROFILE%\.ollama\logs\server.log`
+  - If Ollama was already running: tails the most recently written of the known Ollama log locations —
+    `%USERPROFILE%\.ollama\logs\server.log` (CLI/server install) or `%LOCALAPPDATA%\Ollama\server.log` (Ollama for Windows desktop app)
 
 Changes apply live on the next refresh cycle (no restart needed).
 

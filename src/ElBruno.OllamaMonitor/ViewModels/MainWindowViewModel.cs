@@ -38,6 +38,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _gpuText = "GPU: Unavailable";
     private string _compactGpuText = "GPU: Unavailable";
     private string _gpuMemoryText = "VRAM: Unavailable";
+    private string _contextText = "Context: Unavailable";
     private string _modelsSummaryText = "No loaded models.";
     private string _primaryModelText = "Model: No loaded models";
     private string _compactModelsText = "Models: No loaded models";
@@ -49,6 +50,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string? _errorText;
     private bool _showCpuInMiniMonitor;
     private bool _showMemoryInMiniMonitor;
+    private bool _showContextInMiniMonitor;
     private bool _showOllamaLogsInMiniMonitor;
     private bool _isLogsPanelExpanded;
 
@@ -114,29 +116,30 @@ public sealed class MainWindowViewModel : ViewModelBase
         private set => SetProperty(ref _showMemoryInMiniMonitor, value);
     }
 
+    public bool ShowContextInMiniMonitor
+    {
+        get => _showContextInMiniMonitor;
+        private set => SetProperty(ref _showContextInMiniMonitor, value);
+    }
+
     public bool ShowOllamaLogsInMiniMonitor
     {
         get => _showOllamaLogsInMiniMonitor;
         private set
         {
-            if (SetProperty(ref _showOllamaLogsInMiniMonitor, value))
+            if (SetProperty(ref _showOllamaLogsInMiniMonitor, value) && value)
             {
-                if (value)
+                // Log capture is app-managed (context-window tracking always
+                // depends on it); here we only refresh the log panel content.
+                _ollamaLogService.Start();
+                System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
                 {
-                    _ollamaLogService.Start();
-                    System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
-                    {
-                        OllamaLogLines.Clear();
-                        foreach (var line in _ollamaLogService.RecentLines)
-                            OllamaLogLines.Add(line);
-                        while (OllamaLogLines.Count > 5)
-                            OllamaLogLines.RemoveAt(0);
-                    });
-                }
-                else
-                {
-                    _ollamaLogService.Stop();
-                }
+                    OllamaLogLines.Clear();
+                    foreach (var line in _ollamaLogService.RecentLines)
+                        OllamaLogLines.Add(line);
+                    while (OllamaLogLines.Count > 5)
+                        OllamaLogLines.RemoveAt(0);
+                });
             }
         }
     }
@@ -249,6 +252,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         private set => SetProperty(ref _gpuMemoryText, value);
     }
 
+    public string ContextText
+    {
+        get => _contextText;
+        private set => SetProperty(ref _contextText, value);
+    }
+
     public string ModelsSummaryText
     {
         get => _modelsSummaryText;
@@ -350,6 +359,7 @@ public sealed class MainWindowViewModel : ViewModelBase
             _notificationService.SetDebounceSeconds(settings.NotificationDebounceSeconds);
             ShowCpuInMiniMonitor = settings.ShowCpuInMiniMonitor;
             ShowMemoryInMiniMonitor = settings.ShowMemoryInMiniMonitor;
+            ShowContextInMiniMonitor = settings.ShowContextInMiniMonitor;
             ShowOllamaLogsInMiniMonitor = settings.ShowOllamaLogsInMiniMonitor;
 
             var snapshot = await _statusService.GetSnapshotAsync(settings, cancellationToken);
@@ -487,6 +497,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         GpuText = $"GPU: {(snapshot.Resources is null ? "Unavailable" : StatusTextHelper.BuildGpuSummary(snapshot.Resources))}";
         CompactGpuText = $"GPU: {StatusTextHelper.BuildCompactGpuSummary(snapshot.Resources)}";
         GpuMemoryText = $"VRAM: {StatusTextHelper.FormatBytes(snapshot.Resources?.VramUsedBytes)} / {StatusTextHelper.FormatBytes(snapshot.Resources?.VramTotalBytes)}";
+        ContextText = $"Context: {StatusTextHelper.BuildContextSummary(snapshot.ContextWindows)}";
         ModelsSummaryText = snapshot.Models.Count == 0
             ? "No loaded models."
             : $"{snapshot.Models.Count} loaded model(s).";

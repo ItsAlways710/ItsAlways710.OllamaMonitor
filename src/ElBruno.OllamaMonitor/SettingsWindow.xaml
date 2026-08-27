@@ -316,6 +316,12 @@
                                   Margin="0,0,0,10"
                                   FontSize="12"
                                   Cursor="Hand" />
+                        <CheckBox Content="Show Context in Mini Monitor"
+                                  IsChecked="{Binding ShowContextInMiniMonitor}"
+                                  Foreground="#E2E8F0"
+                                  Margin="0,0,0,10"
+                                  FontSize="12"
+                                  Cursor="Hand" />
                         <CheckBox Content="Show Ollama logs in Mini Monitor"
                                   IsChecked="{Binding ShowOllamaLogsInMiniMonitor}"
                                   Foreground="#E2E8F0"

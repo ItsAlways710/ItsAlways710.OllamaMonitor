@@ -13,6 +13,7 @@ public sealed class OllamaStatusService
     private readonly IOllamaCliService _ollamaCliService;
     private readonly ProcessMetricsService _processMetricsService;
     private readonly NvidiaSmiMetricsService _gpuMetricsService;
+    private readonly ContextTrackingService _contextTrackingService;
     private readonly DiagnosticsLogService _diagnostics;
 
     public OllamaStatusService(
@@ -20,12 +21,14 @@ public sealed class OllamaStatusService
         IOllamaCliService ollamaCliService,
         ProcessMetricsService processMetricsService,
         NvidiaSmiMetricsService gpuMetricsService,
+        ContextTrackingService contextTrackingService,
         DiagnosticsLogService diagnostics)
     {
         _ollamaClient = ollamaClient;
         _ollamaCliService = ollamaCliService;
         _processMetricsService = processMetricsService;
         _gpuMetricsService = gpuMetricsService;
+        _contextTrackingService = contextTrackingService;
         _diagnostics = diagnostics;
     }
 
@@ -92,6 +95,7 @@ public sealed class OllamaStatusService
             Version = versionResult.Value?.Version,
             IsApiReachable = versionResult.IsSuccess,
             Models = models,
+            ContextWindows = _contextTrackingService.GetSnapshot(),
             Resources = resourceSnapshot,
             LastChecked = checkedAt,
             ErrorMessage = errorMessage

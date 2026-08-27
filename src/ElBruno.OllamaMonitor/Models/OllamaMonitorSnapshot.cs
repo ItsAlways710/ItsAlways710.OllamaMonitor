@@ -7,6 +7,7 @@ public sealed record OllamaMonitorSnapshot
     public string? Version { get; init; }
     public bool IsApiReachable { get; init; }
     public IReadOnlyList<OllamaModelSnapshot> Models { get; init; } = [];
+    public IReadOnlyList<ContextWindowSample> ContextWindows { get; init; } = [];
     public ResourceSnapshot? Resources { get; init; }
     public DateTimeOffset LastChecked { get; init; }
     public string? ErrorMessage { get; init; }

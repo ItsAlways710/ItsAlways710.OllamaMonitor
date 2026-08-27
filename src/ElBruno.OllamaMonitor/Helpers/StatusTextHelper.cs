@@ -118,6 +118,39 @@ public static class StatusTextHelper
     public static string FormatBytesPerSecond(long? value) =>
         value is null ? "Unavailable" : $"{FormatBytes(value)} / s";
 
+    public static string BuildContextSummary(IReadOnlyList<ContextWindowSample> samples)
+    {
+        if (samples.Count == 0)
+        {
+            return "Unavailable";
+        }
+
+        var showTaskIds = samples.Count > 1;
+        var lines = samples.Select(sample =>
+        {
+            var parts = new List<string>();
+            if (sample.UsedTokens is not null && sample.SlotTokens is not null)
+            {
+                parts.Add($"{sample.UsedTokens.Value:N0} / {sample.SlotTokens.Value:N0} tokens");
+            }
+
+            if (sample.UsedPercent is not null)
+            {
+                parts.Add($"{sample.UsedPercent.Value:0.#}% used");
+            }
+
+            if (sample.TokensPerSecond is not null)
+            {
+                parts.Add($"{sample.TokensPerSecond.Value:0.##} t/s");
+            }
+
+            var detail = parts.Count > 0 ? string.Join(" \u00B7 ", parts) : "waiting for log activity";
+            return showTaskIds ? $"task {sample.TaskId}: {detail}" : detail;
+        });
+
+        return string.Join(Environment.NewLine, lines);
+    }
+
     public static string FormatDateTime(DateTimeOffset? value) =>
         value is null ? "Unavailable" : value.Value.LocalDateTime.ToString("yyyy-MM-dd HH:mm:ss");
 

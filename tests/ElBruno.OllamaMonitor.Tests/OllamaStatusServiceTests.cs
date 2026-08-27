@@ -144,6 +144,7 @@ public sealed class OllamaStatusServiceTests
             cli,
             new ProcessMetricsService(diagnostics),
             new NvidiaSmiMetricsService(diagnostics),
+            new ContextTrackingService(new OllamaLogService(diagnostics)),
             diagnostics);
         return new SnapshotFixture(service);
     }
@@ -161,6 +162,7 @@ public sealed class OllamaStatusServiceTests
             cli,
             new ProcessMetricsService(diagnostics),
             new NvidiaSmiMetricsService(diagnostics),
+            new ContextTrackingService(new OllamaLogService(diagnostics)),
             diagnostics);
 
         return new TestFixture(service, cli, handler);

@@ -25,6 +25,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     private ModelUnloadStrategy _selectedUnloadStrategy;
     private bool _showCpuInMiniMonitor;
     private bool _showMemoryInMiniMonitor;
+    private bool _showContextInMiniMonitor;
     private bool _showOllamaLogsInMiniMonitor;
 
     public SettingsWindowViewModel(AppSettings settings, AppSettingsService settingsService)
@@ -131,6 +132,12 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         set => SetProperty(ref _showMemoryInMiniMonitor, value);
     }
 
+    public bool ShowContextInMiniMonitor
+    {
+        get => _showContextInMiniMonitor;
+        set => SetProperty(ref _showContextInMiniMonitor, value);
+    }
+
     public bool ShowOllamaLogsInMiniMonitor
     {
         get => _showOllamaLogsInMiniMonitor;
@@ -159,6 +166,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
             UnloadStrategy = SelectedUnloadStrategy,
             ShowCpuInMiniMonitor = ShowCpuInMiniMonitor,
             ShowMemoryInMiniMonitor = ShowMemoryInMiniMonitor,
+            ShowContextInMiniMonitor = ShowContextInMiniMonitor,
             ShowOllamaLogsInMiniMonitor = ShowOllamaLogsInMiniMonitor
         };
 
@@ -184,8 +192,8 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         NotifyModelOperationFailed = (_settings.NotificationEvents & NotificationEventType.ModelOperationFailed) != 0;
         NotifyOllamaStarted = (_settings.NotificationEvents & NotificationEventType.OllamaStarted) != 0;
 
-        ShowCpuInMiniMonitor = _settings.ShowCpuInMiniMonitor;
         ShowMemoryInMiniMonitor = _settings.ShowMemoryInMiniMonitor;
+        ShowContextInMiniMonitor = _settings.ShowContextInMiniMonitor;
         ShowOllamaLogsInMiniMonitor = _settings.ShowOllamaLogsInMiniMonitor;
     }
 
