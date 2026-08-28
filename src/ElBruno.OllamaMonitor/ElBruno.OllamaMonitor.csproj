@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
+    <PackageReference Include="ScottPlot.WPF" Version="5.1.59" />
   </ItemGroup>
 
 </Project>

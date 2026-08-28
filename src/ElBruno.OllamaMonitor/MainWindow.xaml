@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
         mc:Ignorable="d"
         Style="{DynamicResource ThemeWindowStyle}"
         Title="ItsAlways710.OllamaMonitor - Details"
@@ -194,6 +195,7 @@
 
                     <GroupBox Header="GPU Status"
                               Grid.Column="1"
+                              VerticalAlignment="Top"
                               Margin="8,0,0,0"
                               Background="{DynamicResource ThemePanelBrush}"
                               BorderBrush="{DynamicResource ThemeBorderBrush}"
@@ -207,6 +209,9 @@
                                        Foreground="#FF34D399" />
                             <TextBlock Text="{Binding GpuMemoryText}"
                                        FontSize="11" />
+                            <ScottPlot:WpfPlot x:Name="GpuUsagePlot"
+                                                Height="140"
+                                                Margin="0,10,0,0" />
                         </StackPanel>
                     </GroupBox>
                 </Grid>

@@ -43,6 +43,17 @@ public class ThemeService
         }
     }
 
+    /// <summary>
+    /// Resolve a theme preference to the theme that is actually active
+    /// (System follows the OS light/dark switch).
+    /// </summary>
+    public static bool IsResolvedDark(ThemeMode mode) => mode switch
+    {
+        ThemeMode.Light => false,
+        ThemeMode.Dark => true,
+        _ => IsSystemDarkMode()
+    };
+
     public static bool IsSystemDarkMode()
     {
         try

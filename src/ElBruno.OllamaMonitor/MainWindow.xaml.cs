@@ -1,15 +1,21 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using ElBruno.OllamaMonitor.Models;
 using ElBruno.OllamaMonitor.Services;
+using ElBruno.OllamaMonitor.ViewModels;
 
 namespace ElBruno.OllamaMonitor;
 
 public partial class MainWindow : System.Windows.Window
 {
+    private readonly GpuUsageGraph _gpuGraph;
     private bool _allowClose;
 
-    public MainWindow()
+    public MainWindow(int refreshIntervalSeconds)
     {
         InitializeComponent();
+        _gpuGraph = new GpuUsageGraph(GpuUsagePlot, refreshIntervalSeconds);
+        _gpuGraph.ApplyTheme(ThemeService.IsResolvedDark(ThemeService.GetSavedThemePreference()));
+        DataContextChanged += MainWindow_DataContextChanged;
         this.Loaded += (_, _) =>
         {
             InitializeThemeSelector();
@@ -27,7 +33,37 @@ public partial class MainWindow : System.Windows.Window
             return;
         }
 
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.SnapshotUpdated -= OnSnapshotUpdated;
+        }
+
         base.OnClosing(e);
+    }
+
+    private void MainWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is MainWindowViewModel viewModel)
+        {
+            viewModel.SnapshotUpdated += OnSnapshotUpdated;
+        }
+    }
+
+    private void OnSnapshotUpdated(object? sender, OllamaMonitorSnapshot snapshot)
+    {
+        var resources = snapshot.Resources;
+        if (resources is null)
+        {
+            return;
+        }
+
+        double? vramPercent = resources.VramUsedBytes is { } used
+            && resources.VramTotalBytes is { } total
+            && total > 0
+            ? 100d * used / total
+            : null;
+
+        _gpuGraph.AddSample(vramPercent, resources.GpuPercent);
     }
 
     private void InitializeThemeSelector()
@@ -50,6 +86,7 @@ public partial class MainWindow : System.Windows.Window
         {
             ThemeService.ApplyTheme(theme);
             ThemeService.SaveThemePreference(theme);
+            _gpuGraph.ApplyTheme(ThemeService.IsResolvedDark(theme));
         }
     }
 

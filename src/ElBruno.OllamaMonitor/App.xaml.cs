@@ -93,7 +93,7 @@ public partial class App : System.Windows.Application
         // before the first Details-window open (e.g. a tray-only start with the mini
         // window shown later) would otherwise have no theme dictionary at all.
         ThemeService.ApplyTheme(ThemeService.GetSavedThemePreference());
-        _mainWindow = new MainWindow();
+        _mainWindow = new MainWindow(Math.Max(1, settings.RefreshIntervalSeconds));
         _miniMonitorWindow = new MiniMonitorWindow(settingsService);
         _mainWindowViewModel = new MainWindowViewModel(
             statusService,
