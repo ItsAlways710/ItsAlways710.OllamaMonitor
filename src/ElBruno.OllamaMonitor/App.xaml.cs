@@ -100,7 +100,6 @@ public partial class App : System.Windows.Application
             settingsService,
             diagnostics,
             _ollamaLogService,
-            () => _mainWindow.Hide(),
             text => System.Windows.Clipboard.SetText(text),
             url => ProcessLauncher.Open(url, diagnostics));
 
@@ -128,9 +127,9 @@ public partial class App : System.Windows.Application
             }
         };
 
-        if (settings.ShowFloatingWindowOnStart && !settings.StartMinimizedToTray)
+        if (settings.ShowFloatingWindowOnStart)
         {
-            _mainWindow.Show();
+            _miniMonitorWindow.Show();
         }
 
         await _mainWindowViewModel.RefreshAsync(cancellationToken);

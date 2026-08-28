@@ -20,7 +20,6 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     private bool _notifyModelOperationFailed;
     private bool _notifyOllamaStarted;
     private int _notificationDebounceSeconds;
-    private bool _startMinimizedToTray;
     private bool _showFloatingWindowOnStart;
     private ModelUnloadStrategy _selectedUnloadStrategy;
     private bool _showCpuInMiniMonitor;
@@ -108,12 +107,6 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         set => SetProperty(ref _notificationDebounceSeconds, Math.Max(5, value));
     }
 
-    public bool StartMinimizedToTray
-    {
-        get => _startMinimizedToTray;
-        set => SetProperty(ref _startMinimizedToTray, value);
-    }
-
     public bool ShowFloatingWindowOnStart
     {
         get => _showFloatingWindowOnStart;
@@ -161,7 +154,6 @@ public sealed class SettingsWindowViewModel : ViewModelBase
             EnableNotifications = EnableNotifications,
             NotificationEvents = notificationEvents,
             NotificationDebounceSeconds = NotificationDebounceSeconds,
-            StartMinimizedToTray = StartMinimizedToTray,
             ShowFloatingWindowOnStart = ShowFloatingWindowOnStart,
             UnloadStrategy = SelectedUnloadStrategy,
             ShowCpuInMiniMonitor = ShowCpuInMiniMonitor,
@@ -177,7 +169,6 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     {
         EnableNotifications = _settings.EnableNotifications;
         NotificationDebounceSeconds = _settings.NotificationDebounceSeconds;
-        StartMinimizedToTray = _settings.StartMinimizedToTray;
         ShowFloatingWindowOnStart = _settings.ShowFloatingWindowOnStart;
         SelectedUnloadStrategy = _settings.UnloadStrategy;
 

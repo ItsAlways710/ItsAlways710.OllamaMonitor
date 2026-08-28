@@ -14,7 +14,6 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly AppSettingsService _settingsService;
     private readonly DiagnosticsLogService _diagnostics;
     private readonly IOllamaLogService _ollamaLogService;
-    private readonly Action _hideWindow;
     private readonly Action<string> _copyToClipboard;
     private readonly Action<string> _openUrl;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
@@ -60,7 +59,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         AppSettingsService settingsService,
         DiagnosticsLogService diagnostics,
         IOllamaLogService ollamaLogService,
-        Action hideWindow,
         Action<string> copyToClipboard,
         Action<string> openUrl)
     {
@@ -68,7 +66,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         _settingsService = settingsService;
         _diagnostics = diagnostics;
         _ollamaLogService = ollamaLogService;
-        _hideWindow = hideWindow;
         _copyToClipboard = copyToClipboard;
         _openUrl = openUrl;
         _notificationService = new WindowsNotificationService(diagnostics);
@@ -81,7 +78,6 @@ public sealed class MainWindowViewModel : ViewModelBase
         CopyStatusCommand = new RelayCommand(CopyStatus);
         OpenEndpointCommand = new RelayCommand(OpenEndpoint);
         OpenSettingsCommand = new AsyncRelayCommand(OpenSettingsAsync);
-        HideWindowCommand = new RelayCommand(() => _hideWindow());
         UnloadAllModelsCommand = new AsyncRelayCommand(
             () => UnloadAllModelsAsync(CancellationToken.None),
             () => Models.Count > 0);
@@ -155,7 +151,6 @@ public sealed class MainWindowViewModel : ViewModelBase
     public RelayCommand CopyStatusCommand { get; }
     public RelayCommand OpenEndpointCommand { get; }
     public AsyncRelayCommand OpenSettingsCommand { get; }
-    public RelayCommand HideWindowCommand { get; }
     public AsyncRelayCommand UnloadAllModelsCommand { get; }
     public AsyncRelayCommand StopSelectedModelCommand { get; }
     public AsyncRelayCommand PullModelCommand { get; }

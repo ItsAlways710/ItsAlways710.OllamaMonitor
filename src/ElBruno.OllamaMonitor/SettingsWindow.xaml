@@ -260,13 +260,6 @@
                         </DataTemplate>
                     </GroupBox.HeaderTemplate>
                     <StackPanel>
-                        <CheckBox x:Name="StartMinimizedCheckBox"
-                                  Content="Start minimized to tray"
-                                  IsChecked="{Binding StartMinimizedToTray}"
-                                  Foreground="{DynamicResource ThemeForegroundBrush}"
-                                  Margin="0,0,0,12"
-                                  FontSize="12"
-                                  Cursor="Hand" />
                         <CheckBox x:Name="ShowFloatingCheckBox"
                                   Content="Show floating mini monitor on start"
                                   IsChecked="{Binding ShowFloatingWindowOnStart}"
