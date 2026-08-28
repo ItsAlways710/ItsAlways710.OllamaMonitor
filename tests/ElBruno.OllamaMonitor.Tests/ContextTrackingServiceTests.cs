@@ -1,4 +1,5 @@
 using ElBruno.OllamaMonitor.Diagnostics;
+using ElBruno.OllamaMonitor.Models;
 using ElBruno.OllamaMonitor.Services;
 
 namespace ElBruno.OllamaMonitor.Tests;
@@ -33,7 +34,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
     [Fact]
     public void GetSnapshot_NoLines_ReturnsEmpty()
     {
-        Assert.Empty(_sut.GetSnapshot());
+        Assert.Empty(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
     }
 
     [Fact]
@@ -41,7 +42,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
     {
         Inject("slot   operator(): id 0 | task 1 | new prompt, n_ctx_slot = 188416, task.n_tokens = 1234");
 
-        var sample = Assert.Single(_sut.GetSnapshot());
+        var sample = Assert.Single(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
         Assert.Equal(1, sample.TaskId);
         Assert.Equal(188416, sample.SlotTokens);
         Assert.Equal(1234, sample.UsedTokens);
@@ -54,7 +55,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
     {
         Inject("slot print_timing: id 0 | task 2 | tg = 12.34 t/s");
 
-        var sample = Assert.Single(_sut.GetSnapshot());
+        var sample = Assert.Single(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
         Assert.Equal(2, sample.TaskId);
         Assert.Equal(12.34, sample.TokensPerSecond!.Value, 3);
         Assert.Null(sample.SlotTokens);
@@ -66,11 +67,11 @@ public sealed class ContextTrackingServiceTests : IDisposable
     public void UsedPercent_OnlyComputedWhenBothTokenCountsKnown()
     {
         Inject("slot print_timing: id 0 | task 1 | tg = 12.34 t/s");
-        var before = Assert.Single(_sut.GetSnapshot());
+        var before = Assert.Single(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
         Assert.Null(before.UsedPercent);
 
         Inject("slot   operator(): id 0 | task 1 | new prompt, n_ctx_slot = 2048, task.n_tokens = 512");
-        var after = Assert.Single(_sut.GetSnapshot());
+        var after = Assert.Single(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
         Assert.Equal(25, after.UsedPercent!.Value, 5);
         Assert.Equal(12.34, after.TokensPerSecond!.Value, 3);
     }
@@ -82,7 +83,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
         Inject("slot   operator(): id 1 | task 5 | new prompt, n_ctx_slot = 8192, task.n_tokens = 200");
         Inject("slot print_timing: id 2 | task 5 | tg = 7.5 t/s");
 
-        var snapshots = _sut.GetSnapshot().OrderBy(sample => sample.TaskId).ToList();
+        var snapshots = _sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()).OrderBy(sample => sample.TaskId).ToList();
         Assert.Equal(2, snapshots.Count);
 
         var task1 = snapshots[0];
@@ -105,7 +106,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
         Inject("slot   operator(): id 0 | task 1 | token_count, task.n_tokens = 256");
         Inject("slot print_timing: id 0 | task 1 | tg = 99.9 t/s");
 
-        var sample = Assert.Single(_sut.GetSnapshot());
+        var sample = Assert.Single(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
         Assert.Equal(4096, sample.SlotTokens);
         Assert.Equal(256, sample.UsedTokens);
         Assert.Equal(99.9, sample.TokensPerSecond!.Value, 3);
@@ -119,7 +120,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
         Inject("level=WARN msg=\"unknown flag\"");
         Inject("");
 
-        Assert.Empty(_sut.GetSnapshot());
+        Assert.Empty(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
     }
 
     [Fact]
@@ -127,7 +128,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
     {
         Inject("some diagnostic: n_ctx_slot = 4096, task.n_tokens = 64");
 
-        Assert.Empty(_sut.GetSnapshot());
+        Assert.Empty(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
     }
 
     [Fact]
@@ -138,7 +139,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
 
         Inject("slot release: id 0 | task 12504 | stop processing: n_tokens = 113271, truncated = 0");
 
-        var sample = Assert.Single(_sut.GetSnapshot());
+        var sample = Assert.Single(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
         Assert.Equal(113271, sample.UsedTokens);
         Assert.Null(sample.TokensPerSecond);
     }
@@ -151,7 +152,7 @@ public sealed class ContextTrackingServiceTests : IDisposable
 
         Inject("slot release: id 0 | task 12505");
 
-        var sample = Assert.Single(_sut.GetSnapshot());
+        var sample = Assert.Single(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
         Assert.Equal(64, sample.UsedTokens);
         Assert.Null(sample.TokensPerSecond);
     }
@@ -162,6 +163,6 @@ public sealed class ContextTrackingServiceTests : IDisposable
         _sut.Dispose();
         Inject("slot   operator(): id 0 | task 3 | new prompt, n_ctx_slot = 1024, task.n_tokens = 512");
 
-        Assert.Empty(_sut.GetSnapshot());
+        Assert.Empty(_sut.GetSnapshot(Array.Empty<OllamaModelSnapshot>()));
     }
 }

@@ -153,104 +153,60 @@ public static class StatusTextHelper
 
     /// <summary>
     /// Builds the Mini Monitor context lines (never the Details window's BuildContextSummary).
-    /// Each loaded model with live task data gets one line named after it; at most one
-    /// task per model is shown (the most active one). Tasks are attributed to models by
-    /// matching the log's 'n_ctx_slot' against the model's 'context_length' from /api/ps.
-    /// Tasks with no matching loaded model are dropped (leftovers of released models).
-    /// Tasks that cannot be attributed by name (several loaded models share one context
-    /// size) each still get their own line — labeled unknown but with each task's own
-    /// stats; lines are never merged across tasks.
+    /// Each model with attributed task data gets one line named after it; at most one
+    /// task per model is shown (the most recently active one - recency of log activity
+    /// outranks magnitude of usage, so an idle high-usage task doesn't crowd out an
+    /// actively-generating one). Attribution arrives pre-resolved
+    /// on each ContextWindowSample (ModelName) from ContextTrackingService, which caches
+    /// it per task (sticky) - so an unlabeled line means "not yet attributed" (a brief
+    /// transient state), not "ambiguous by design". Unlabeled tasks each still get their
+    /// own line with their own stats; lines are never merged across tasks.
     /// </summary>
-    public static IReadOnlyList<string> BuildMiniModelContextLines(
-        IReadOnlyList<OllamaModelSnapshot> models,
-        IReadOnlyList<ContextWindowSample> samples)
+    public static IReadOnlyList<string> BuildMiniModelContextLines(IReadOnlyList<ContextWindowSample> samples)
     {
         if (samples.Count == 0)
         {
             return new[] { "Context: Unavailable" };
         }
 
-        if (models.Count == 0)
-        {
-            // No loaded models reported (API failure or all released): keep every live
-            // task visible, unlabeled.
-            return BuildUnlabeledTaskLines(samples);
-        }
-
-        // Sole candidate without a measured context (older Ollama builds): with exactly one
-        // model loaded its slot is certain — only when it reports no context_length at all,
-        // so we never claim a stale slot that doesn't match a measured model.
-        var soleUnmeasured = models.Count == 1 && models[0].ContextLength is null
-            ? models[0]
-            : null;
-
-        var modelsWithContext = models
-            .Where(model => model.ContextLength is not null)
-            .ToList();
-
-        var attributed = new Dictionary<OllamaModelSnapshot, List<ContextWindowSample>>();
+        var attributed = new Dictionary<string, List<ContextWindowSample>>();
         var anonymousPool = new List<ContextWindowSample>();
 
         foreach (var sample in samples)
         {
-            var matches = modelsWithContext
-                .Where(model => sample.SlotTokens is not null && model.ContextLength == sample.SlotTokens)
-                .ToList();
-
-            if (matches.Count == 1)
+            if (string.IsNullOrWhiteSpace(sample.ModelName))
             {
-                // Exact slot-size match with a single loaded model: certain.
-                AddToGroup(attributed, matches[0], sample);
-            }
-            else if (matches.Count > 1)
-            {
-                // Several loaded models share the same context size: not attributable
-                // without guessing, so pool unlabeled.
+                // Not yet attributed (transient state): keep it visible, unlabeled.
                 anonymousPool.Add(sample);
+                continue;
             }
-            else if (soleUnmeasured is not null)
+
+            if (!attributed.TryGetValue(sample.ModelName, out var list))
             {
-                // One loaded model, unknown context size: it is the only candidate.
-                AddToGroup(attributed, soleUnmeasured, sample);
+                attributed[sample.ModelName] = list = new List<ContextWindowSample>();
             }
-            else
-            {
-                // No loaded model claims this slot: leftover of a released model.
-            }
+
+            list.Add(sample);
         }
 
         var lines = attributed
             .OrderByDescending(pair => TopSample(pair.Value).UsedPercent ?? double.NegativeInfinity)
             .ThenByDescending(pair => TopSample(pair.Value).TokensPerSecond ?? double.NegativeInfinity)
-            .ThenBy(pair => pair.Key.Name)
-            .Select(pair => $"{pair.Key.Name} - {BuildTopTaskDetail(TopSample(pair.Value))}")
+            .ThenBy(pair => pair.Key)
+            .Select(pair => $"{pair.Key} - {BuildTopTaskDetail(TopSample(pair.Value))}")
             .ToList();
 
         if (anonymousPool.Count > 0)
         {
-            // Attribution is ambiguous by name, but the tasks are distinct — one line
-            // per task, each with its own stats.
             lines.AddRange(BuildUnlabeledTaskLines(anonymousPool));
         }
 
         return lines.Count > 0 ? lines : new[] { "Context: Unavailable" };
     }
 
-    private static void AddToGroup(
-        Dictionary<OllamaModelSnapshot, List<ContextWindowSample>> attributed,
-        OllamaModelSnapshot model,
-        ContextWindowSample sample)
-    {
-        if (!attributed.TryGetValue(model, out var list))
-        {
-            attributed[model] = list = new List<ContextWindowSample>();
-        }
-
-        list.Add(sample);
-    }
-
     private static ContextWindowSample TopSample(IReadOnlyList<ContextWindowSample> samples) => samples
-        .OrderByDescending(sample => sample.UsedPercent ?? double.NegativeInfinity)
+        .OrderByDescending(sample => sample.LastUpdated)
+        .ThenByDescending(sample => sample.UsedPercent ?? double.NegativeInfinity)
         .ThenByDescending(sample => sample.TokensPerSecond ?? double.NegativeInfinity)
         .ThenBy(sample => sample.TaskId)
         .First();

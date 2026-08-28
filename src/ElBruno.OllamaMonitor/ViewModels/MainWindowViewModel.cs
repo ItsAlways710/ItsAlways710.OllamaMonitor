@@ -505,7 +505,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         CompactGpuText = $"GPU: {StatusTextHelper.BuildCompactGpuSummary(snapshot.Resources)}";
         GpuMemoryText = $"VRAM: {StatusTextHelper.FormatBytes(snapshot.Resources?.VramUsedBytes)} / {StatusTextHelper.FormatBytes(snapshot.Resources?.VramTotalBytes)}";
         ContextText = $"Context: {StatusTextHelper.BuildContextSummary(snapshot.ContextWindows)}";
-        MiniContextLines = StatusTextHelper.BuildMiniModelContextLines(snapshot.Models, snapshot.ContextWindows);
+        MiniContextLines = StatusTextHelper.BuildMiniModelContextLines(snapshot.ContextWindows);
         ModelsSummaryText = snapshot.Models.Count == 0
             ? "No loaded models."
             : $"{snapshot.Models.Count} loaded model(s).";

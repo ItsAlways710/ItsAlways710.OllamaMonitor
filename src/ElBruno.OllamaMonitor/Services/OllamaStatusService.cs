@@ -95,7 +95,7 @@ public sealed class OllamaStatusService
             Version = versionResult.Value?.Version,
             IsApiReachable = versionResult.IsSuccess,
             Models = models,
-            ContextWindows = _contextTrackingService.GetSnapshot(),
+            ContextWindows = _contextTrackingService.GetSnapshot(models),
             Resources = resourceSnapshot,
             LastChecked = checkedAt,
             ErrorMessage = errorMessage

@@ -8,6 +8,9 @@ public sealed record ContextWindowSample
 {
     public int TaskId { get; init; }
 
+    /// <summary>When the task last emitted a log line (most recent activity).</summary>
+    public DateTimeOffset LastUpdated { get; init; }
+
     /// <summary>Total context window allocated for the loaded model (n_ctx_slot).</summary>
     public int? SlotTokens { get; init; }
 
@@ -19,4 +22,9 @@ public sealed record ContextWindowSample
 
     /// <summary>UsedTokens as a percentage of SlotTokens, when both are known.</summary>
     public double? UsedPercent { get; init; }
+
+    /// <summary>Weight-file digest ("sha256:&lt;hex&gt;") of the attributed model, when resolved.</summary>
+    public string? ModelDigest { get; init; }
+    /// <summary>Model name the task is attributed to, when resolved. Sticky: keeps its value for the task's lifetime, even after the model unloads.</summary>
+    public string? ModelName { get; init; }
 }
