@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
+        Style="{DynamicResource ThemeWindowStyle}"
         Title="Settings - ItsAlways710.OllamaMonitor"
         Width="600"
         Height="750"
@@ -12,30 +13,28 @@
         ResizeMode="CanResize"
         ShowInTaskbar="False"
         Icon="Assets/TrayIcons/tray-green.ico"
-        WindowStartupLocation="CenterOwner"
-        Background="#0F172A"
-        Foreground="#FFFFFF">
+        WindowStartupLocation="CenterOwner">
     <DockPanel LastChildFill="True">
         <!-- Header -->
         <Border DockPanel.Dock="Top"
-                Background="#1E293B"
+                Background="{DynamicResource ThemePanelBrush}"
                 Padding="20,15">
             <StackPanel Margin="0">
                 <TextBlock Text="Settings"
                            FontSize="22"
                            FontWeight="Bold"
-                           Foreground="#FFFFFF"
+                           Foreground="{DynamicResource ThemeForegroundBrush}"
                            Margin="0" />
                 <TextBlock Text="Configure notifications and application behavior"
                            FontSize="12"
-                           Foreground="#94A3B8"
+                           Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                            Margin="0,5,0,0" />
             </StackPanel>
         </Border>
 
         <!-- Buttons Footer -->
         <Border DockPanel.Dock="Bottom"
-                Background="#1E293B"
+                Background="{DynamicResource ThemePanelBrush}"
                 Padding="20,15">
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right">
@@ -45,7 +44,6 @@
                         Padding="20,10"
                         Margin="0,0,10,0"
                         Background="#64748B"
-                        Foreground="White"
                         FontSize="12"
                         FontWeight="SemiBold"
                         BorderThickness="0"
@@ -55,7 +53,6 @@
                         Click="SaveButton_Click"
                         Padding="20,10"
                         Background="#3B82F6"
-                        Foreground="White"
                         FontSize="12"
                         FontWeight="SemiBold"
                         BorderThickness="0"
@@ -66,13 +63,13 @@
         <!-- Scrollable Content -->
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
-                      Background="#0F172A"
+                      Background="{DynamicResource ThemeBackgroundBrush}"
                       Padding="20,20,20,20">
             <StackPanel>
                 <!-- Notifications Section -->
                 <GroupBox Header="📢 Notifications"
-                          Background="#1E293B"
-                          Foreground="#FFFFFF"
+                          Background="{DynamicResource ThemePanelBrush}"
+                          Foreground="{DynamicResource ThemeForegroundBrush}"
                           Margin="0,0,0,20"
                           Padding="15">
                     <GroupBox.HeaderTemplate>
@@ -84,90 +81,91 @@
                         <CheckBox x:Name="EnableNotificationsCheckBox"
                                   Content="Enable Windows Notifications"
                                   IsChecked="{Binding EnableNotifications}"
-                                  Foreground="#E2E8F0"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
                                   Margin="0,0,0,15"
                                   FontSize="13"
                                   Cursor="Hand" />
 
                         <TextBlock Text="Event Types:"
-                                   Foreground="#CBD5E1"
+                                   Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                    Margin="0,10,0,10"
                                    FontSize="12"
                                    FontWeight="Bold" />
 
                         <!-- Ollama Events -->
-                        <Border Background="#0F172A"
+                        <Border Background="{DynamicResource ThemeBackgroundBrush}"
                                 CornerRadius="6"
                                 Padding="12"
                                 Margin="0,0,0,15"
-                                BorderBrush="#334155"
+                                BorderBrush="{DynamicResource ThemeBorderBrush}"
                                 BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="Ollama Status"
-                                           Foreground="#CBD5E1"
+                                           Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                            FontWeight="Bold"
                                            FontSize="11"
                                            Margin="0,0,0,10" />
                                 <CheckBox x:Name="OllamaOfflineCheckBox"
                                           Content="🔴 Ollama goes offline"
                                           IsChecked="{Binding NotifyOllamaOffline}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           Margin="0,0,0,8"
                                           FontSize="12"
                                           Cursor="Hand" />
                                 <CheckBox x:Name="OllamaOnlineCheckBox"
                                           Content="🟢 Ollama comes back online"
                                           IsChecked="{Binding NotifyOllamaOnline}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           FontSize="12"
                                           Cursor="Hand" />
                             </StackPanel>
                         </Border>
 
                         <!-- Model Events -->
-                        <Border Background="#0F172A"
+                        <Border Background="{DynamicResource ThemeBackgroundBrush}"
                                 CornerRadius="6"
                                 Padding="12"
                                 Margin="0,0,0,15"
-                                BorderBrush="#334155"
+                                BorderBrush="{DynamicResource ThemeBorderBrush}"
                                 BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="Model Events"
-                                           Foreground="#CBD5E1"
+                                           Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                            FontWeight="Bold"
                                            FontSize="11"
                                            Margin="0,0,0,10" />
                                 <CheckBox x:Name="ModelLoadedCheckBox"
                                           Content="📦 Model is loaded"
                                           IsChecked="{Binding NotifyModelLoaded}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           Margin="0,0,0,8"
                                           FontSize="12"
                                           Cursor="Hand" />
                                 <CheckBox x:Name="ModelUnloadedCheckBox"
                                           Content="📭 Model is unloaded"
                                           IsChecked="{Binding NotifyModelUnloaded}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
+                                          Margin="0,0,0,8"
                                           FontSize="12"
                                           Cursor="Hand" />
                                 <CheckBox x:Name="ModelOperationSucceededCheckBox"
                                           Content="✅ Model operation succeeded (stop/pull/remove/copy)"
                                           IsChecked="{Binding NotifyModelOperationSucceeded}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           Margin="0,8,0,0"
                                           FontSize="12"
                                           Cursor="Hand" />
                                 <CheckBox x:Name="ModelOperationFailedCheckBox"
                                           Content="❌ Model operation failed (stop/pull/remove/copy)"
                                           IsChecked="{Binding NotifyModelOperationFailed}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           Margin="0,8,0,0"
                                           FontSize="12"
                                           Cursor="Hand" />
                                 <CheckBox x:Name="OllamaStartedCheckBox"
                                           Content="🚀 Ollama daemon start requested"
                                           IsChecked="{Binding NotifyOllamaStarted}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           Margin="0,8,0,0"
                                           FontSize="12"
                                           Cursor="Hand" />
@@ -175,36 +173,36 @@
                         </Border>
 
                         <!-- Resource Events -->
-                        <Border Background="#0F172A"
+                        <Border Background="{DynamicResource ThemeBackgroundBrush}"
                                 CornerRadius="6"
                                 Padding="12"
                                 Margin="0,0,0,15"
-                                BorderBrush="#334155"
+                                BorderBrush="{DynamicResource ThemeBorderBrush}"
                                 BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="Resource Usage Alerts"
-                                           Foreground="#CBD5E1"
+                                           Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                            FontWeight="Bold"
                                            FontSize="11"
                                            Margin="0,0,0,10" />
                                 <CheckBox x:Name="HighCpuCheckBox"
                                           Content="⚠️  High CPU usage"
                                           IsChecked="{Binding NotifyHighCpu}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           Margin="0,0,0,8"
                                           FontSize="12"
                                           Cursor="Hand" />
                                 <CheckBox x:Name="HighMemoryCheckBox"
                                           Content="⚠️  High memory usage"
                                           IsChecked="{Binding NotifyHighMemory}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           Margin="0,0,0,8"
                                           FontSize="12"
                                           Cursor="Hand" />
                                 <CheckBox x:Name="HighGpuCheckBox"
                                           Content="⚠️  High GPU usage"
                                           IsChecked="{Binding NotifyHighGpu}"
-                                          Foreground="#E2E8F0"
+                                          Foreground="{DynamicResource ThemeForegroundBrush}"
                                           FontSize="12"
                                           Cursor="Hand" />
                             </StackPanel>
@@ -213,7 +211,7 @@
                         <!-- Debounce Setting -->
                         <StackPanel Margin="0,10,0,15">
                             <TextBlock Text="Notification Debounce (seconds)"
-                                       Foreground="#CBD5E1"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                        FontSize="12"
                                        FontWeight="Bold"
                                        Margin="0,0,0,10" />
@@ -225,25 +223,25 @@
                                         Value="{Binding NotificationDebounceSeconds, UpdateSourceTrigger=PropertyChanged}"
                                         TickFrequency="5"
                                         IsSnapToTickEnabled="True"
-                                        Background="#1E293B"
-                                        Foreground="#3B82F6"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeAccentBrush}"
                                         Margin="0,0,15,0"
                                         VerticalAlignment="Center" />
                                 <TextBlock x:Name="DebounceValueBlock"
                                            Text="{Binding NotificationDebounceSeconds}"
-                                           Foreground="#CBD5E1"
+                                           Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                            FontSize="13"
                                            Width="50"
                                            VerticalAlignment="Center"
                                            TextAlignment="Center" />
                                 <TextBlock Text="sec"
-                                           Foreground="#94A3B8"
+                                           Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                            FontSize="12"
                                            VerticalAlignment="Center"
                                            Margin="5,0,0,0" />
                             </StackPanel>
                             <TextBlock Text="Prevents duplicate notifications for the same event within this time window"
-                                       Foreground="#64748B"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                        FontSize="11"
                                        Margin="0,10,0,0"
                                        TextWrapping="Wrap" />
@@ -253,8 +251,8 @@
 
                 <!-- General Section -->
                 <GroupBox Header="⚙️  General"
-                          Background="#1E293B"
-                          Foreground="#FFFFFF"
+                          Background="{DynamicResource ThemePanelBrush}"
+                          Foreground="{DynamicResource ThemeForegroundBrush}"
                           Padding="15">
                     <GroupBox.HeaderTemplate>
                         <DataTemplate>
@@ -265,28 +263,25 @@
                         <CheckBox x:Name="StartMinimizedCheckBox"
                                   Content="Start minimized to tray"
                                   IsChecked="{Binding StartMinimizedToTray}"
-                                  Foreground="#E2E8F0"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
                                   Margin="0,0,0,12"
                                   FontSize="12"
                                   Cursor="Hand" />
                         <CheckBox x:Name="ShowFloatingCheckBox"
                                   Content="Show floating mini monitor on start"
                                   IsChecked="{Binding ShowFloatingWindowOnStart}"
-                                  Foreground="#E2E8F0"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
                                   FontSize="12"
                                   Cursor="Hand" />
 
                         <TextBlock Text="Unload Strategy"
-                                   Foreground="#CBD5E1"
+                                   Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                    FontSize="12"
                                    FontWeight="Bold"
                                    Margin="0,16,0,8" />
                         <ComboBox x:Name="UnloadStrategyComboBox"
                                   ItemsSource="{Binding UnloadStrategies}"
                                   SelectedItem="{Binding SelectedUnloadStrategy}"
-                                  Background="#0F172A"
-                                  Foreground="#E2E8F0"
-                                  BorderBrush="#334155"
                                   Padding="8"
                                   ToolTip="Auto uses CLI for local endpoints and API for remote endpoints." />
                     </StackPanel>
@@ -294,8 +289,8 @@
 
                 <!-- Mini Monitor Display Section -->
                 <GroupBox Header="📊 Mini Monitor Display"
-                          Background="#1E293B"
-                          Foreground="#FFFFFF"
+                          Background="{DynamicResource ThemePanelBrush}"
+                          Foreground="{DynamicResource ThemeForegroundBrush}"
                           Padding="15"
                           Margin="0,20,0,0">
                     <GroupBox.HeaderTemplate>
@@ -306,25 +301,25 @@
                     <StackPanel>
                         <CheckBox Content="Show CPU in Mini Monitor"
                                   IsChecked="{Binding ShowCpuInMiniMonitor}"
-                                  Foreground="#E2E8F0"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
                                   Margin="0,0,0,10"
                                   FontSize="12"
                                   Cursor="Hand" />
                         <CheckBox Content="Show Memory in Mini Monitor"
                                   IsChecked="{Binding ShowMemoryInMiniMonitor}"
-                                  Foreground="#E2E8F0"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
                                   Margin="0,0,0,10"
                                   FontSize="12"
                                   Cursor="Hand" />
                         <CheckBox Content="Show Context in Mini Monitor"
                                   IsChecked="{Binding ShowContextInMiniMonitor}"
-                                  Foreground="#E2E8F0"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
                                   Margin="0,0,0,10"
                                   FontSize="12"
                                   Cursor="Hand" />
                         <CheckBox Content="Show Ollama logs in Mini Monitor"
                                   IsChecked="{Binding ShowOllamaLogsInMiniMonitor}"
-                                  Foreground="#E2E8F0"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
                                   FontSize="12"
                                   Cursor="Hand" />
                     </StackPanel>

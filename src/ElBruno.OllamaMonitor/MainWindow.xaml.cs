@@ -10,7 +10,10 @@ public partial class MainWindow : System.Windows.Window
     public MainWindow()
     {
         InitializeComponent();
-        this.Loaded += (_, _) => InitializeThemeSelector();
+        this.Loaded += (_, _) =>
+        {
+            InitializeThemeSelector();
+        };
     }
 
     public void PrepareForExit() => _allowClose = true;
@@ -29,17 +32,31 @@ public partial class MainWindow : System.Windows.Window
 
     private void InitializeThemeSelector()
     {
-        var savedTheme = ThemeService.GetSavedThemePreference();
-        ThemeSelector.SelectedItem = savedTheme.ToString();
+        var savedTheme = ThemeService.GetSavedThemePreference().ToString();
+        foreach (var item in ThemeSelector.Items)
+        {
+            if (GetThemeText(item) == savedTheme)
+            {
+                ThemeSelector.SelectedItem = item;
+                return;
+            }
+        }
     }
 
     private void ThemeSelector_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        if (ThemeSelector.SelectedItem is string selectedItem &&
-            System.Enum.TryParse<Services.ThemeMode>(selectedItem, out var theme))
+        var text = GetThemeText(ThemeSelector.SelectedItem);
+        if (text is not null && System.Enum.TryParse<Services.ThemeMode>(text, out var theme))
         {
             ThemeService.ApplyTheme(theme);
             ThemeService.SaveThemePreference(theme);
         }
     }
+
+    private static string? GetThemeText(object? item) => item switch
+    {
+        string s => s,
+        System.Windows.Controls.ComboBoxItem comboBoxItem => comboBoxItem.Content as string,
+        _ => null
+    };
 }

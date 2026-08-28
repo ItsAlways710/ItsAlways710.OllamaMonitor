@@ -529,6 +529,7 @@ public sealed class MainWindowViewModel : ViewModelBase
             _modelCache.Remove(staleKey);
         }
 
+        var previousSelectedModelName = SelectedModel?.Name;
         Models.Clear();
         foreach (var modelName in currentModelNames)
         {
@@ -538,9 +539,9 @@ public sealed class MainWindowViewModel : ViewModelBase
             }
         }
 
-        if (SelectedModel is not null)
+        if (previousSelectedModelName is not null)
         {
-            SelectedModel = Models.FirstOrDefault(model => model.Name.Equals(SelectedModel.Name, StringComparison.OrdinalIgnoreCase));
+            SelectedModel = Models.FirstOrDefault(model => model.Name.Equals(previousSelectedModelName, StringComparison.OrdinalIgnoreCase));
         }
 
         UnloadAllModelsCommand.RaiseCanExecuteChanged();

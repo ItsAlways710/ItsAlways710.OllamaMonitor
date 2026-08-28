@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
+        Style="{DynamicResource ThemeWindowStyle}"
         Title="ItsAlways710.OllamaMonitor - Details"
         Width="760"
         Height="560"
@@ -25,13 +26,11 @@
                 <Label Content="Theme:"
                        VerticalAlignment="Center"
                        Margin="0,0,6,0"
-                       Foreground="#FFD1D5DB" />
+                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}" />
                 <ComboBox x:Name="ThemeSelector"
                           Width="100"
                           Margin="0,0,12,0"
-                          SelectionChanged="ThemeSelector_SelectionChanged"
-                          Background="#1F2937"
-                          Foreground="White">
+                          SelectionChanged="ThemeSelector_SelectionChanged">
                     <ComboBoxItem>Light</ComboBoxItem>
                     <ComboBoxItem>Dark</ComboBoxItem>
                     <ComboBoxItem>System</ComboBoxItem>
@@ -40,56 +39,49 @@
                         Command="{Binding RefreshCommand}"
                         Margin="0,0,8,0"
                         Padding="14,6"
-                        Background="#0E639C"
-                        Foreground="White" />
+                        Background="{DynamicResource ThemeAccentBrush}" />
                 <Button Content="Copy Status"
                         Command="{Binding CopyStatusCommand}"
                         Margin="0,0,8,0"
                         Padding="14,6"
-                        Background="#0E639C"
-                        Foreground="White" />
+                        Background="{DynamicResource ThemeAccentBrush}" />
                 <Button Content="Open API"
                         Command="{Binding OpenEndpointCommand}"
                         Margin="0,0,8,0"
                         Padding="14,6"
-                        Background="#0E639C"
-                        Foreground="White" />
+                        Background="{DynamicResource ThemeAccentBrush}" />
                 <Button Content="Stop All Models"
                         Command="{Binding UnloadAllModelsCommand}"
                         ToolTip="Stop all running models."
                         Margin="0,0,8,0"
                         Padding="14,6"
-                        Background="#B45309"
-                        Foreground="White" />
+                        Background="#B45309" />
                 <Button Content="Start Ollama"
                         Command="{Binding StartOllamaCommand}"
                         Margin="0,0,8,0"
                         Padding="14,6"
-                        Background="#0B7A3E"
-                        Foreground="White" />
+                        Background="#0B7A3E" />
                 <Button Content="Settings"
                         Command="{Binding OpenSettingsCommand}"
                         Margin="0,0,8,0"
                         Padding="14,6"
-                        Background="#0E639C"
-                        Foreground="White" />
+                        Background="{DynamicResource ThemeAccentBrush}" />
                 <Button Content="Minimize to Tray"
                         Command="{Binding HideWindowCommand}"
                         Padding="14,6"
-                        Background="#0E639C"
-                        Foreground="White" />
+                        Background="{DynamicResource ThemeAccentBrush}" />
             </StackPanel>
 
             <TextBlock Text="Closing this window keeps the app running in the system tray."
                        HorizontalAlignment="Right"
-                       Foreground="#FF6B7280"
+                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                        FontSize="11" />
         </StackPanel>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <Border Background="#FF1F2937"
-                        BorderBrush="#FF374151"
+                <Border Background="{DynamicResource ThemePanelBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="8"
                         Padding="16"
@@ -107,18 +99,18 @@
                         <StackPanel Grid.Row="0" Grid.Column="0">
                             <TextBlock Text="● Connection Status"
                                        FontSize="12"
-                                       Foreground="#FFA0AEC0"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                        Margin="0,0,0,8" />
                             <TextBlock Text="{Binding StateText}"
                                        FontSize="28"
                                        FontWeight="Bold"
-                                       Foreground="White" />
+                                       Foreground="{DynamicResource ThemeForegroundBrush}" />
                             <TextBlock Text="{Binding ApiReachableText}"
-                                       Foreground="#FFD1D5DB"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                        Margin="0,8,0,0"
                                        FontSize="12" />
                             <TextBlock Text="{Binding Endpoint}"
-                                       Foreground="#FFD1D5DB"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                        Margin="0,4,0,0"
                                        FontSize="12" />
                         </StackPanel>
@@ -126,16 +118,16 @@
                         <StackPanel Grid.Row="0" Grid.Column="1"
                                     HorizontalAlignment="Right">
                             <TextBlock Text="Last Checked"
-                                       Foreground="#FFA0AEC0"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                        HorizontalAlignment="Right"
                                        FontSize="11" />
                             <TextBlock Text="{Binding LastCheckedText}"
                                        FontWeight="SemiBold"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource ThemeForegroundBrush}"
                                        HorizontalAlignment="Right"
                                        Margin="0,4,0,0" />
                             <TextBlock Text="{Binding VersionText}"
-                                       Foreground="#FFD1D5DB"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                        HorizontalAlignment="Right"
                                        Margin="0,12,0,0"
                                        FontSize="11" />
@@ -143,7 +135,7 @@
 
                         <TextBlock Grid.Row="1" Grid.Column="0"
                                    Text="{Binding AppVersionText}"
-                                   Foreground="#FF6B7280"
+                                   Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                    FontSize="10"
                                    Margin="0,12,0,0" />
                     </Grid>
@@ -170,9 +162,9 @@
 
                     <GroupBox Header="System Metrics"
                               Margin="0,0,8,0"
-                              Background="#FF0F172A"
-                              BorderBrush="#FF1F2937"
-                              Foreground="#FFFFFFFF">
+                              Background="{DynamicResource ThemePanelBrush}"
+                              BorderBrush="{DynamicResource ThemeBorderBrush}"
+                              Foreground="{DynamicResource ThemeForegroundBrush}">
                         <StackPanel Margin="8">
                             <TextBlock Text="{Binding ProcessStatusText}"
                                        Margin="0,0,0,8"
@@ -207,9 +199,9 @@
                     <GroupBox Header="GPU Status"
                               Grid.Column="1"
                               Margin="8,0,0,0"
-                              Background="#FF0F172A"
-                              BorderBrush="#FF1F2937"
-                              Foreground="#FFFFFFFF">
+                              Background="{DynamicResource ThemePanelBrush}"
+                              BorderBrush="{DynamicResource ThemeBorderBrush}"
+                              Foreground="{DynamicResource ThemeForegroundBrush}">
                         <StackPanel Margin="8">
                             <TextBlock Text="{Binding GpuText}"
                                        Margin="0,0,0,8"
@@ -224,34 +216,32 @@
                 </Grid>
 
                 <GroupBox Header="Loaded Models"
-                          Background="#FF0F172A"
-                          BorderBrush="#FF1F2937"
-                          Foreground="#FFFFFFFF">
+                          Background="{DynamicResource ThemePanelBrush}"
+                          BorderBrush="{DynamicResource ThemeBorderBrush}"
+                          Foreground="{DynamicResource ThemeForegroundBrush}">
                     <DockPanel Margin="8">
                         <StackPanel DockPanel.Dock="Top"
                                    Margin="0,0,0,12">
                             <TextBlock Text="Running Model Actions"
                                       FontSize="11"
-                                      Foreground="#FFA0AEC0"
+                                      Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                       Margin="0,0,0,6" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Stop Selected"
                                        Command="{Binding StopSelectedModelCommand}"
                                        Margin="0,0,8,0"
                                        Padding="10,4"
-                                       Background="#B45309"
-                                       Foreground="White" />
+                                       Background="#B45309" />
                                 <Button Content="Refresh Models"
                                        Command="{Binding RefreshCommand}"
                                        Margin="0,0,8,0"
                                        Padding="10,4"
-                                       Background="#0E639C"
-                                       Foreground="White" />
+                                       Background="{DynamicResource ThemeAccentBrush}" />
                             </StackPanel>
 
                             <TextBlock Text="Model Lifecycle"
                                       FontSize="11"
-                                      Foreground="#FFA0AEC0"
+                                      Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                       Margin="0,12,0,6" />
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -261,16 +251,15 @@
                                 <TextBox Text="{Binding PullModelName, UpdateSourceTrigger=PropertyChanged}"
                                         Margin="0,0,8,0"
                                         Padding="8,4"
-                                        Background="#1F2937"
-                                        Foreground="White"
-                                        BorderBrush="#374151"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
                                         VerticalContentAlignment="Center" />
                                 <Button Grid.Column="1"
                                        Content="Pull"
                                        Command="{Binding PullModelCommand}"
                                        Padding="10,4"
-                                       Background="#0B7A3E"
-                                       Foreground="White" />
+                                       Background="#0B7A3E" />
                             </Grid>
 
                             <Grid Margin="0,8,0,0">
@@ -281,16 +270,15 @@
                                 <TextBox Text="{Binding RemoveModelName, UpdateSourceTrigger=PropertyChanged}"
                                         Margin="0,0,8,0"
                                         Padding="8,4"
-                                        Background="#1F2937"
-                                        Foreground="White"
-                                        BorderBrush="#374151"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
                                         VerticalContentAlignment="Center" />
                                 <Button Grid.Column="1"
                                        Content="Remove"
                                        Command="{Binding RemoveModelCommand}"
                                        Padding="10,4"
-                                       Background="#991B1B"
-                                       Foreground="White" />
+                                       Background="#991B1B" />
                             </Grid>
 
                             <Grid Margin="0,8,0,0">
@@ -302,35 +290,34 @@
                                 <TextBox Text="{Binding CopySourceModelName, UpdateSourceTrigger=PropertyChanged}"
                                         Margin="0,0,8,0"
                                         Padding="8,4"
-                                        Background="#1F2937"
-                                        Foreground="White"
-                                        BorderBrush="#374151"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
                                         VerticalContentAlignment="Center" />
                                 <TextBox Grid.Column="1"
                                         Text="{Binding CopyTargetModelName, UpdateSourceTrigger=PropertyChanged}"
                                         Margin="0,0,8,0"
                                         Padding="8,4"
-                                        Background="#1F2937"
-                                        Foreground="White"
-                                        BorderBrush="#374151"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
                                         VerticalContentAlignment="Center" />
                                 <Button Grid.Column="2"
                                        Content="Copy"
                                        Command="{Binding CopyModelCommand}"
                                        Padding="10,4"
-                                       Background="#0E639C"
-                                       Foreground="White" />
+                                       Background="{DynamicResource ThemeAccentBrush}" />
                             </Grid>
                         </StackPanel>
                         <TextBlock DockPanel.Dock="Top"
                                    Text="{Binding ModelsSummaryText}"
                                    Margin="0,0,0,12"
                                    FontSize="11"
-                                   Foreground="#FFA0AEC0" />
+                                   Foreground="{DynamicResource ThemeSecondaryForegroundBrush}" />
                         <ListView ItemsSource="{Binding Models}"
                                   SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
-                                  Background="#FF1F2937"
-                                  Foreground="#FFFFFFFF">
+                                  Background="{DynamicResource ThemePanelBrush}"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}">
                             <ListView.View>
                                 <GridView>
                                     <GridViewColumn Header="Name"

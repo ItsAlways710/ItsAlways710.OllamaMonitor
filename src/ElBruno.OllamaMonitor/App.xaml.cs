@@ -89,6 +89,10 @@ public partial class App : System.Windows.Application
         var gpuMetricsService = new NvidiaSmiMetricsService(diagnostics);
         var statusService = new OllamaStatusService(ollamaClient, ollamaCliService, processMetricsService, gpuMetricsService, _contextTrackingService, diagnostics);
 
+        // Make the saved theme active for the whole app lifetime. Windows created
+        // before the first Details-window open (e.g. a tray-only start with the mini
+        // window shown later) would otherwise have no theme dictionary at all.
+        ThemeService.ApplyTheme(ThemeService.GetSavedThemePreference());
         _mainWindow = new MainWindow();
         _miniMonitorWindow = new MiniMonitorWindow();
         _mainWindowViewModel = new MainWindowViewModel(
