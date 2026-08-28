@@ -23,6 +23,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private OllamaMonitorState? _previousState;
 
     private string _stateText = "Starting";
+    private string _stateForeground = "White";
     private string _endpoint = "http://localhost:11434";
     private string _versionText = "Version: Unavailable";
     private string _appVersionText = "v0.9.0";
@@ -38,7 +39,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _compactGpuText = "GPU: Unavailable";
     private string _gpuMemoryText = "VRAM: Unavailable";
     private string _contextText = "Context: Unavailable";
-    private IReadOnlyList<string> _miniContextLines = new[] { "Context: Unavailable" };
+    private IReadOnlyList<MiniContextLine> _miniContextLines = new[] { new MiniContextLine("Context: Unavailable", "Context: Unavailable") };
     private string _modelsSummaryText = "No loaded models.";
     private string _primaryModelText = "Model: No loaded models";
     private string _compactModelsText = "Models: No loaded models";
@@ -164,6 +165,12 @@ public sealed class MainWindowViewModel : ViewModelBase
         private set => SetProperty(ref _stateText, value);
     }
 
+    public string StateForeground
+    {
+        get => _stateForeground;
+        private set => SetProperty(ref _stateForeground, value);
+    }
+
     public string Endpoint
     {
         get => _endpoint;
@@ -254,7 +261,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         private set => SetProperty(ref _contextText, value);
     }
 
-    public IReadOnlyList<string> MiniContextLines
+    public IReadOnlyList<MiniContextLine> MiniContextLines
     {
         get => _miniContextLines;
         private set => SetProperty(ref _miniContextLines, value);
@@ -486,6 +493,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     {
         _latestSnapshot = snapshot;
         StateText = StatusTextHelper.GetStateLabel(snapshot.State);
+        StateForeground = StatusTextHelper.GetStateForeground(snapshot.State);
         Endpoint = snapshot.Endpoint;
         VersionText = $"Version: {snapshot.Version ?? "Unavailable"}";
         LastCheckedText = snapshot.LastChecked.ToString("yyyy-MM-dd HH:mm:ss");

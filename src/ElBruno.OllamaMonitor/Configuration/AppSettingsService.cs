@@ -76,4 +76,33 @@ public sealed class AppSettingsService
         var settings = await LoadAsync(cancellationToken);
         await SaveAsync(settings with { RefreshIntervalSeconds = refreshIntervalSeconds }, cancellationToken);
     }
+
+    /// <summary>
+    /// Synchronous variant for UI-thread callers at window hide/close, where the process
+    /// may also be exiting and an async file round-trip risks lost writes.
+    /// </summary>
+    public void UpdateMiniMonitorPosition(double left, double top)
+    {
+        var settings = LoadSync();
+        SaveSync(settings with { MiniMonitorLeft = left, MiniMonitorTop = top });
+    }
+
+    private static AppSettings LoadSync()
+    {
+        if (!File.Exists(AppPaths.SettingsFilePath))
+        {
+            return new AppSettings();
+        }
+
+        return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(AppPaths.SettingsFilePath), SerializerOptions)
+               ?? new AppSettings();
+    }
+
+    private static void SaveSync(AppSettings settings)
+    {
+        Directory.CreateDirectory(AppPaths.RootDirectory);
+        File.WriteAllText(
+            AppPaths.SettingsFilePath,
+            JsonSerializer.Serialize(settings, SerializerOptions));
+    }
 }

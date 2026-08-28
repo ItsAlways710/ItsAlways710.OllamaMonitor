@@ -20,6 +20,10 @@ public sealed record AppSettings
     public bool ShowContextInMiniMonitor { get; init; } = false;
     public bool ShowOllamaLogsInMiniMonitor { get; init; } = false;
 
+    // Mini Monitor window position (null = never saved; window uses its default place)
+    public double? MiniMonitorLeft { get; init; }
+    public double? MiniMonitorTop { get; init; }
+
     // Notification settings
     public bool EnableNotifications { get; init; } = true;
     public NotificationEventType NotificationEvents { get; init; } = 

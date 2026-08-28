@@ -149,7 +149,7 @@
                        Text="{Binding StateText}"
                        FontSize="26"
                        FontWeight="Bold"
-                       Foreground="White"
+                       Foreground="{Binding StateForeground}"
                        Margin="0,14,0,0" />
 
             <StackPanel Grid.Row="2"
@@ -188,15 +188,15 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
                 <TextBlock Text="{Binding CpuText}"
-                           Foreground="#FFF3F4F6"
+                           Foreground="#FF60A5FA"
                            Margin="0,0,0,6"
                            Visibility="{Binding ShowCpuInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock Text="{Binding MemoryText}"
-                           Foreground="#FFF3F4F6"
+                           Foreground="#FFA78BFA"
                            Margin="0,0,0,6"
                            Visibility="{Binding ShowMemoryInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}" />
                 <TextBlock Text="{Binding CompactGpuText}"
-                           Foreground="#FFF3F4F6"
+                           Foreground="#FF34D399"
                            TextWrapping="Wrap"
                            Margin="0,0,0,6" />
                 <ItemsControl ItemsSource="{Binding MiniContextLines}"
@@ -204,8 +204,9 @@
                               Visibility="{Binding ShowContextInMiniMonitor, Converter={StaticResource BoolToVisibilityConverter}}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}"
-                                       Foreground="#FFF3F4F6"
+                            <TextBlock Text="{Binding Text}"
+                                       ToolTip="{Binding FullText}"
+                                       Foreground="#FF2DD4BF"
                                        TextTrimming="CharacterEllipsis"
                                        Margin="0,1,0,0" />
                         </DataTemplate>

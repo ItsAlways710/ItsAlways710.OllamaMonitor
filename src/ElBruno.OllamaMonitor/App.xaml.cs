@@ -94,7 +94,7 @@ public partial class App : System.Windows.Application
         // window shown later) would otherwise have no theme dictionary at all.
         ThemeService.ApplyTheme(ThemeService.GetSavedThemePreference());
         _mainWindow = new MainWindow();
-        _miniMonitorWindow = new MiniMonitorWindow();
+        _miniMonitorWindow = new MiniMonitorWindow(settingsService);
         _mainWindowViewModel = new MainWindowViewModel(
             statusService,
             settingsService,
@@ -105,6 +105,22 @@ public partial class App : System.Windows.Application
 
         _mainWindow.DataContext = _mainWindowViewModel;
         _miniMonitorWindow.DataContext = _mainWindowViewModel;
+
+        // Restore the last-saved Mini Monitor position when it would still be reachable
+        // on a connected screen; otherwise leave the XAML default (CenterScreen) so the
+        // window never starts somewhere invisible (e.g. its monitor was unplugged).
+        if (settings.MiniMonitorLeft is double savedMiniLeft
+            && settings.MiniMonitorTop is double savedMiniTop
+            && MiniMonitorWindow.IsPositionScreenVisible(
+                   savedMiniLeft, savedMiniTop, _miniMonitorWindow.Width, 300,
+                   SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
+                   SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight,
+                   minimumVisibleExtent: 50))
+        {
+            _miniMonitorWindow.WindowStartupLocation = WindowStartupLocation.Manual;
+            _miniMonitorWindow.Left = savedMiniLeft;
+            _miniMonitorWindow.Top = savedMiniTop;
+        }
 
         _trayIconService = new TrayIconService(
             _mainWindow,

@@ -9,6 +9,8 @@ namespace ElBruno.OllamaMonitor.Tests;
 /// per model is shown (the most recently active one - recency of log activity
 /// outranks magnitude of usage), and that unlabeled tasks (not yet
 /// attributed - a transient state) keep their own line with their own stats.
+/// Long model names are middle-ellipsized to fit the window's fixed width (stats
+/// are never trimmed); a line's FullText keeps the unabridged name plus stats.
 /// </summary>
 public sealed class StatusTextHelperTests
 {
@@ -16,7 +18,7 @@ public sealed class StatusTextHelperTests
     public void EmptySamples_ReturnsUnavailable()
     {
         var result = StatusTextHelper.BuildMiniModelContextLines(Array.Empty<ContextWindowSample>());
-        Assert.Equal(new[] { "Context: Unavailable" }, result);
+        Assert.Equal(new[] { new MiniContextLine("Context: Unavailable", "Context: Unavailable") }, result);
     }
 
     [Fact]
@@ -32,8 +34,8 @@ public sealed class StatusTextHelperTests
 
         Assert.Equal(new[]
         {
-            "localfoo2:latest - 800/1024 - 78.1%",
-            "localfoo:latest - 200/1000 - 20% - 10t/s",
+            new MiniContextLine("localfoo2:latest - 800/1024 - 78.1%", "localfoo2:latest - 800/1024 - 78.1%"),
+            new MiniContextLine("localfoo:latest - 200/1000 - 20% - 10t/s", "localfoo:latest - 200/1000 - 20% - 10t/s"),
         }, result);
     }
 
@@ -53,8 +55,8 @@ public sealed class StatusTextHelperTests
 
         Assert.Equal(new[]
         {
-            "localfoo2:latest - 300/400 - 75% - 50t/s",
-            "localfoo:latest - 256/500 - 51.2% - 100t/s",
+            new MiniContextLine("localfoo2:latest - 300/400 - 75% - 50t/s", "localfoo2:latest - 300/400 - 75% - 50t/s"),
+            new MiniContextLine("localfoo:latest - 256/500 - 51.2% - 100t/s", "localfoo:latest - 256/500 - 51.2% - 100t/s"),
         }, result);
     }
 
@@ -72,7 +74,7 @@ public sealed class StatusTextHelperTests
 
         var result = StatusTextHelper.BuildMiniModelContextLines(samples);
 
-        Assert.Equal(new[] { "localfoo:latest - 1000/5000 - 20% - 15t/s" }, result);
+        Assert.Equal(new[] { new MiniContextLine("localfoo:latest - 1000/5000 - 20% - 15t/s", "localfoo:latest - 1000/5000 - 20% - 15t/s") }, result);
     }
 
     [Fact]
@@ -88,8 +90,8 @@ public sealed class StatusTextHelperTests
 
         Assert.Equal(new[]
         {
-            "100/2048 - 4.9%",
-            "25/1000 - 2.5% - 5t/s",
+            new MiniContextLine("100/2048 - 4.9%", "100/2048 - 4.9%"),
+            new MiniContextLine("25/1000 - 2.5% - 5t/s", "25/1000 - 2.5% - 5t/s"),
         }, result);
     }
 
@@ -107,9 +109,9 @@ public sealed class StatusTextHelperTests
 
         Assert.Equal(new[]
         {
-            "localfoo:latest - 500/1000 - 50%",
-            "other:latest - 250/1000 - 25%",
-            "200/2000 - 10% - 3t/s",
+            new MiniContextLine("localfoo:latest - 500/1000 - 50%", "localfoo:latest - 500/1000 - 50%"),
+            new MiniContextLine("other:latest - 250/1000 - 25%", "other:latest - 250/1000 - 25%"),
+            new MiniContextLine("200/2000 - 10% - 3t/s", "200/2000 - 10% - 3t/s"),
         }, result);
     }
 
@@ -123,6 +125,77 @@ public sealed class StatusTextHelperTests
 
         var result = StatusTextHelper.BuildMiniModelContextLines(samples);
 
-        Assert.Equal(new[] { "localfoo:latest - 64/512 - 12.5% - 12.3t/s" }, result);
+        Assert.Equal(new[] { new MiniContextLine("localfoo:latest - 64/512 - 12.5% - 12.3t/s", "localfoo:latest - 64/512 - 12.5% - 12.3t/s") }, result);
+    }
+
+    [Fact]
+    public void LongModelName_IsMiddleEllipsized_To_FitFixedWindow()
+    {
+        const string name = "unsloth/DinV2-Gemini-2.5-Fast-RL-72B-8bit-GGUF-Q4_K_M";
+        var samples = new[]
+        {
+            new ContextWindowSample { ModelName = name, SlotTokens = 16384, UsedTokens = 8942, UsedPercent = 54.578, TokensPerSecond = 41.2, TaskId = 1 },
+        };
+
+        var line = Assert.Single(StatusTextHelper.BuildMiniModelContextLines(samples));
+
+        // The stats - the reason the line exists - stay intact at the end.
+        Assert.EndsWith(" - 8942/16384 - 54.6% - 41.2t/s", line.Text);
+
+        // Only the name is shortened: head and tail kept, exactly one ellipsis.
+        var namePart = line.Text.Split(" - ")[0];
+        Assert.StartsWith("unsloth/", namePart);
+        Assert.EndsWith("-Q4_K_M", namePart);
+        Assert.Equal(1, namePart.Length - namePart.Replace("\u2026", string.Empty).Length);
+
+        // And the whole line fits the window's fixed budget.
+        Assert.True(line.Text.Length <= 48, $"expected line within 48 chars, got {line.Text.Length}: '{line.Text}'");
+
+        // The tooltip carries the full name plus stats.
+        Assert.Equal($"{name} - 8942/16384 - 54.6% - 41.2t/s", line.FullText);
+    }
+
+    [Fact]
+    public void ExtremeName_StillFits_AndKeepsIdentifyingEnds()
+    {
+        var name = "org/" + new string('m', 92) + "-8bit";
+        var samples = new[]
+        {
+            new ContextWindowSample { ModelName = name, SlotTokens = 4567, UsedTokens = 123, UsedPercent = 2.693, TokensPerSecond = 1.2, TaskId = 1 },
+        };
+
+        var line = Assert.Single(StatusTextHelper.BuildMiniModelContextLines(samples));
+
+        var namePart = line.Text.Split(" - ")[0];
+        Assert.StartsWith("org/", namePart);
+        Assert.EndsWith("-8bit", namePart);
+        Assert.Equal(1, namePart.Length - namePart.Replace("\u2026", string.Empty).Length);
+        Assert.True(line.Text.Length <= 48, $"expected line within 48 chars, got {line.Text.Length}: '{line.Text}'");
+        Assert.EndsWith($"{name} - 123/4567 - 2.7% - 1.2t/s", line.FullText);
+    }
+
+    [Fact]
+    public void UnlabeledLine_FullTextMatchesText()
+    {
+        var samples = new[]
+        {
+            new ContextWindowSample { SlotTokens = 512, UsedTokens = 64, UsedPercent = 12.5, TokensPerSecond = 12.3, TaskId = 1 },
+        };
+
+        var line = Assert.Single(StatusTextHelper.BuildMiniModelContextLines(samples));
+
+        Assert.Equal("64/512 - 12.5% - 12.3t/s", line.Text);
+        Assert.Equal(line.Text, line.FullText);
+    }
+
+    [Theory]
+    [InlineData(OllamaMonitorState.HighUsage, "#FFEF4444")]
+    [InlineData(OllamaMonitorState.ModelLoaded, "White")]
+    [InlineData(OllamaMonitorState.Running, "White")]
+    [InlineData(OllamaMonitorState.NotReachable, "White")]
+    [InlineData(OllamaMonitorState.Error, "White")]
+    public void StateForeground_OnlyHighUsage_IsRed(OllamaMonitorState state, string expected)
+    {
+        Assert.Equal(expected, StatusTextHelper.GetStateForeground(state));
     }
 }
