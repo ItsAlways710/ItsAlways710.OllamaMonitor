@@ -208,7 +208,8 @@
                                        FontWeight="SemiBold"
                                        Foreground="#FF34D399" />
                             <TextBlock Text="{Binding GpuMemoryText}"
-                                       FontSize="11" />
+                                       FontSize="11"
+                                       Foreground="#FF34D399" />
                             <ScottPlot:WpfPlot x:Name="GpuUsagePlot"
                                                 Height="140"
                                                 Margin="0,10,0,0" />
