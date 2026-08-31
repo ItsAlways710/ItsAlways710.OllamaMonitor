@@ -152,8 +152,8 @@ Key settings:
 |-----|------|---------|---------|
 | `endpoint` | string | `http://localhost:11434` | Ollama API endpoint |
 | `refreshIntervalSeconds` | int | `2` | Polling interval |
-| `startMinimizedToTray` | bool | `true` | Hide the windows on startup |
-| `showFloatingWindowOnStart` | bool | `false` | Show the details window on startup |
+| `launchAtWindowsStartup` | bool (UI) | Off | Launch at sign-in via HKCU Run key (Settings → General; not stored in settings.json) |
+| `showFloatingWindowOnStart` | bool | `false` | Show the mini monitor on startup |
 | `enableGpuMetrics` | bool | `true` | Include GPU metrics |
 | `enableDiskMetrics` | bool | `true` | Include disk I/O metrics |
 | `highCpuThresholdPercent` | double | `80` | CPU% to trigger HighUsage state |
@@ -196,6 +196,26 @@ Task<GpuMetrics?> GetGpuMetricsAsync(CancellationToken cancellationToken)
 ```
 
 Returns GPU utilization%, VRAM used/total if available. Fails gracefully if nvidia-smi not found.
+
+### OsMetricsService
+
+Polls whole-machine (OS-level) usage via native `kernel32` calls — the "(System)" half of the CPU/Memory lines.
+
+```csharp
+Task<OsMetricsResult> GetMetricsAsync(CancellationToken cancellationToken)
+```
+
+- CPU% is a two-sample `GetSystemTimes` delta (first sample returns null, like `ProcessMetricsService`)
+- Memory% is a `GlobalMemoryStatusEx` read: (total − available) / total RAM
+
+### AutoLaunchService
+
+Registers/removes the app at Windows sign-in via the per-user Run key
+(`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value `OllamaMonitor`).
+
+- The registry value is the single source of truth for the "Launch at Windows Startup" setting (not stored in settings.json)
+- `IsEnabled()` compares the stored command against the current executable path, so a stale entry reads as off
+- Apply/remove logic is isolated behind `IStartupRegistryStore`, which `RunKeyRegistryStore` implements
 
 ### TrayIconService
 

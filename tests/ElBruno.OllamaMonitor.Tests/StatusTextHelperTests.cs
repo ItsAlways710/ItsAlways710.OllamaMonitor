@@ -198,4 +198,42 @@ public sealed class StatusTextHelperTests
     {
         Assert.Equal(expected, StatusTextHelper.GetStateForeground(state));
     }
+
+    [Fact]
+    public void CpuLine_BothHalvesPresent_ShowsOllamaThenSystem()
+    {
+        Assert.Equal("CPU: 8.4% (Ollama) | 12% (System)", StatusTextHelper.BuildCpuLine(8.4, 12));
+    }
+
+    [Fact]
+    public void CpuLine_OnlyOneHalf_OmitsTheMissingHalf()
+    {
+        Assert.Equal("CPU: 8.4% (Ollama)", StatusTextHelper.BuildCpuLine(8.4, null));
+        Assert.Equal("CPU: 12% (System)", StatusTextHelper.BuildCpuLine(null, 12));
+    }
+
+    [Fact]
+    public void CpuLine_NoData_FallsBackToUnavailable()
+    {
+        Assert.Equal("CPU: Unavailable", StatusTextHelper.BuildCpuLine(null, null));
+    }
+
+    [Fact]
+    public void MemoryLine_BothHalvesPresent_ShowsBytesThenPercent()
+    {
+        Assert.Equal("Memory: 58.1 MB (Ollama) | 42% (System)", StatusTextHelper.BuildMemoryLine(60_922_266L, 42));
+    }
+
+    [Fact]
+    public void MemoryLine_OnlyOneHalf_OmitsTheMissingHalf()
+    {
+        Assert.Equal("Memory: 58.1 MB (Ollama)", StatusTextHelper.BuildMemoryLine(60_922_266L, null));
+        Assert.Equal("Memory: 42% (System)", StatusTextHelper.BuildMemoryLine(null, 42));
+    }
+
+    [Fact]
+    public void MemoryLine_NoData_FallsBackToUnavailable()
+    {
+        Assert.Equal("Memory: Unavailable", StatusTextHelper.BuildMemoryLine(null, null));
+    }
 }

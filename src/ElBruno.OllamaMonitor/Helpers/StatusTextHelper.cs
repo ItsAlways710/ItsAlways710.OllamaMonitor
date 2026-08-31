@@ -108,6 +108,47 @@ public static class StatusTextHelper
         return $"{cpuPercent}% CPU · {gpuPercent}% GPU";
     }
 
+    /// <summary>
+    /// CPU line with the Ollama-process half and the whole-machine (System) half,
+    /// e.g. "CPU: 8.4% (Ollama) | 12% (System)". Missing halves are omitted;
+    /// when both are missing the line falls back to the plain "Unavailable" form.
+    /// </summary>
+    public static string BuildCpuLine(double? ollamaPercent, double? systemPercent)
+    {
+        var segments = new List<string>();
+        if (ollamaPercent is not null)
+        {
+            segments.Add($"{FormatPercent(ollamaPercent)} (Ollama)");
+        }
+
+        if (systemPercent is not null)
+        {
+            segments.Add($"{FormatPercent(systemPercent)} (System)");
+        }
+
+        return segments.Count == 0 ? "CPU: Unavailable" : $"CPU: {string.Join(" | ", segments)}";
+    }
+
+    /// <summary>
+    /// Memory line with the Ollama-process half (absolute) and the whole-machine
+    /// half (percent of total RAM), e.g. "Memory: 58.1 MB (Ollama) | 42% (System)".
+    /// </summary>
+    public static string BuildMemoryLine(long? ollamaBytes, double? systemPercent)
+    {
+        var segments = new List<string>();
+        if (ollamaBytes is not null)
+        {
+            segments.Add($"{FormatBytes(ollamaBytes)} (Ollama)");
+        }
+
+        if (systemPercent is not null)
+        {
+            segments.Add($"{FormatPercent(systemPercent)} (System)");
+        }
+
+        return segments.Count == 0 ? "Memory: Unavailable" : $"Memory: {string.Join(" | ", segments)}";
+    }
+
     public static string FormatPercent(double? value) => value is null ? "Unavailable" : $"{value.Value:0.#}%";
 
     public static string FormatBytes(long? value)

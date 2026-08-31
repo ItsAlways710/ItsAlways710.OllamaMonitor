@@ -13,6 +13,7 @@ public sealed class OllamaStatusService
     private readonly IOllamaCliService _ollamaCliService;
     private readonly ProcessMetricsService _processMetricsService;
     private readonly NvidiaSmiMetricsService _gpuMetricsService;
+    private readonly OsMetricsService _osMetricsService;
     private readonly ContextTrackingService _contextTrackingService;
     private readonly DiagnosticsLogService _diagnostics;
 
@@ -21,6 +22,7 @@ public sealed class OllamaStatusService
         IOllamaCliService ollamaCliService,
         ProcessMetricsService processMetricsService,
         NvidiaSmiMetricsService gpuMetricsService,
+        OsMetricsService osMetricsService,
         ContextTrackingService contextTrackingService,
         DiagnosticsLogService diagnostics)
     {
@@ -28,6 +30,7 @@ public sealed class OllamaStatusService
         _ollamaCliService = ollamaCliService;
         _processMetricsService = processMetricsService;
         _gpuMetricsService = gpuMetricsService;
+        _osMetricsService = osMetricsService;
         _contextTrackingService = contextTrackingService;
         _diagnostics = diagnostics;
     }
@@ -51,13 +54,15 @@ public sealed class OllamaStatusService
         var runningModelsTask = _ollamaClient.GetRunningModelsAsync(endpoint, cancellationToken);
         var processMetricsTask = _processMetricsService.GetMetricsAsync(settings.EnableDiskMetrics, cancellationToken);
         var gpuMetricsTask = _gpuMetricsService.GetMetricsAsync(settings.EnableGpuMetrics, cancellationToken);
+        var osMetricsTask = _osMetricsService.GetMetricsAsync(cancellationToken);
 
-        await Task.WhenAll(versionTask, runningModelsTask, processMetricsTask, gpuMetricsTask);
+        await Task.WhenAll(versionTask, runningModelsTask, processMetricsTask, gpuMetricsTask, osMetricsTask);
 
         var versionResult = await versionTask;
         var runningModelsResult = await runningModelsTask;
         var processMetrics = await processMetricsTask;
         var gpuMetrics = await gpuMetricsTask;
+        var osMetrics = await osMetricsTask;
 
         var errors = new List<string>();
         if (!versionResult.IsSuccess && !string.IsNullOrWhiteSpace(versionResult.ErrorMessage))
@@ -75,7 +80,7 @@ public sealed class OllamaStatusService
             errors.Add(processMetrics.ErrorMessage);
         }
 
-        var resourceSnapshot = BuildResourceSnapshot(processMetrics, gpuMetrics);
+        var resourceSnapshot = BuildResourceSnapshot(processMetrics, gpuMetrics, osMetrics);
         var models = runningModelsResult.IsSuccess
             ? BuildModelSnapshots(runningModelsResult.Value?.Models)
             : Array.Empty<OllamaModelSnapshot>();
@@ -304,7 +309,7 @@ public sealed class OllamaStatusService
         return values.Any() ? string.Join(" · ", values) : details?.Format;
     }
 
-    private static ResourceSnapshot BuildResourceSnapshot(ProcessMetricsResult processMetrics, GpuMetricsResult gpuMetrics) =>
+    private static ResourceSnapshot BuildResourceSnapshot(ProcessMetricsResult processMetrics, GpuMetricsResult gpuMetrics, OsMetricsResult osMetrics) =>
         new()
         {
             CpuPercent = processMetrics.CpuPercent,
@@ -313,6 +318,8 @@ public sealed class OllamaStatusService
             PrivateMemoryBytes = processMetrics.PrivateMemoryBytes,
             DiskReadBytesPerSecond = processMetrics.DiskReadBytesPerSecond,
             DiskWriteBytesPerSecond = processMetrics.DiskWriteBytesPerSecond,
+            SystemCpuPercent = osMetrics.CpuPercent,
+            SystemMemoryPercent = osMetrics.MemoryPercent,
             GpuPercent = gpuMetrics.GpuPercent,
             VramUsedBytes = gpuMetrics.VramUsedBytes,
             VramTotalBytes = gpuMetrics.VramTotalBytes,

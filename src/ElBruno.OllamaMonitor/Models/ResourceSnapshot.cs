@@ -8,6 +8,8 @@ public sealed record ResourceSnapshot
     public long? PrivateMemoryBytes { get; init; }
     public long? DiskReadBytesPerSecond { get; init; }
     public long? DiskWriteBytesPerSecond { get; init; }
+    public double? SystemCpuPercent { get; init; }
+    public double? SystemMemoryPercent { get; init; }
     public double? GpuPercent { get; init; }
     public long? VramUsedBytes { get; init; }
     public long? VramTotalBytes { get; init; }

@@ -16,6 +16,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly IOllamaLogService _ollamaLogService;
     private readonly Action<string> _copyToClipboard;
     private readonly Action<string> _openUrl;
+    private readonly AutoLaunchService _autoLaunchService;
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private readonly Dictionary<string, OllamaModelSnapshot> _modelCache = new();
     private readonly WindowsNotificationService _notificationService;
@@ -61,7 +62,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         DiagnosticsLogService diagnostics,
         IOllamaLogService ollamaLogService,
         Action<string> copyToClipboard,
-        Action<string> openUrl)
+        Action<string> openUrl,
+        AutoLaunchService autoLaunchService)
     {
         _statusService = statusService;
         _settingsService = settingsService;
@@ -69,6 +71,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         _ollamaLogService = ollamaLogService;
         _copyToClipboard = copyToClipboard;
         _openUrl = openUrl;
+        _autoLaunchService = autoLaunchService;
         _notificationService = new WindowsNotificationService(diagnostics);
 
         Models = new ObservableCollection<OllamaModelSnapshot>();
@@ -504,8 +507,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         PrivateMemoryText = $"Private Memory: {StatusTextHelper.FormatBytes(snapshot.Resources?.PrivateMemoryBytes)}";
         DiskReadText = $"Disk Read: {StatusTextHelper.FormatBytesPerSecond(snapshot.Resources?.DiskReadBytesPerSecond)}";
         DiskWriteText = $"Disk Write: {StatusTextHelper.FormatBytesPerSecond(snapshot.Resources?.DiskWriteBytesPerSecond)}";
-        GpuText = $"GPU: {(snapshot.Resources is null ? "Unavailable" : StatusTextHelper.BuildGpuSummary(snapshot.Resources))}";
-        CompactGpuText = $"GPU: {StatusTextHelper.BuildCompactGpuSummary(snapshot.Resources)}";
+        CpuText = StatusTextHelper.BuildCpuLine(snapshot.Resources?.CpuPercent, snapshot.Resources?.SystemCpuPercent);
+        MemoryText = StatusTextHelper.BuildMemoryLine(snapshot.Resources?.MemoryBytes, snapshot.Resources?.SystemMemoryPercent);
         GpuMemoryText = $"VRAM: {StatusTextHelper.FormatBytes(snapshot.Resources?.VramUsedBytes)} / {StatusTextHelper.FormatBytes(snapshot.Resources?.VramTotalBytes)}";
         ContextText = $"Context: {StatusTextHelper.BuildContextSummary(snapshot.ContextWindows)}";
         MiniContextLines = StatusTextHelper.BuildMiniModelContextLines(snapshot.ContextWindows);
@@ -861,7 +864,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private async Task OpenSettingsAsync()
     {
         var settings = await _settingsService.LoadAsync(CancellationToken.None);
-        var viewModel = new SettingsWindowViewModel(settings, _settingsService);
+        var viewModel = new SettingsWindowViewModel(settings, _settingsService, _autoLaunchService);
         var settingsWindow = new SettingsWindow { DataContext = viewModel };
 
         if (settingsWindow.ShowDialog() == true)

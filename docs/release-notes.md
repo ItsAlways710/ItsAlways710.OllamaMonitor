@@ -2,6 +2,26 @@
 
 ## Version History
 
+### 0.11.0 — Launch at Windows Startup & System-wide Metrics
+
+**Release Date:** 2026-08-31
+
+This release adds a Windows sign-in autostart toggle and system-wide CPU/memory usage alongside the Ollama process metrics.
+
+#### What's New
+
+- ✅ **Launch at Windows Startup** setting (Settings → General, off by default) — registers the app under the per-user Run key (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`); the registry entry is the setting, so the checkbox always reflects the actual registration state
+- ✅ **System-wide CPU% and Memory%** on the CPU and Memory lines in the Details window and the Mini Monitor (e.g. `CPU: 8.4% (Ollama) | 12% (System)`, `Memory: 58.1 MB (Ollama) | 42% (System)`)
+- ✅ System metrics sampled with native kernel32 calls (`GetSystemTimes` CPU delta, `GlobalMemoryStatusEx` memory), no new dependencies
+
+#### Notes
+
+- Launch-at-startup is intentionally **not stored in settings.json**; disabling removes the Run-key entry, and external removal is reflected the next time Settings opens
+- At sign-in the app starts in the tray, matching manual launch behavior
+- System memory is shown as a percentage of total RAM ("available" excludes reclaimable cache, so it reads at or above Task Manager's "In use")
+
+---
+
 ### 0.10.0 — Mini Monitor Optional Display Options
 
 **Release Date:** 2026-06-28
