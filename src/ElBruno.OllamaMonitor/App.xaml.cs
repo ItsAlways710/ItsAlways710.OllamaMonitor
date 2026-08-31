@@ -87,7 +87,9 @@ public partial class App : System.Windows.Application
         var ollamaCliService = new OllamaCliService(diagnostics, _ollamaLogService);
         var processMetricsService = new ProcessMetricsService(diagnostics);
         var gpuMetricsService = new NvidiaSmiMetricsService(diagnostics);
-        var statusService = new OllamaStatusService(ollamaClient, ollamaCliService, processMetricsService, gpuMetricsService, _contextTrackingService, diagnostics);
+        var autoLaunchService = new AutoLaunchService(diagnostics);
+        var osMetricsService = new OsMetricsService(diagnostics);
+        var statusService = new OllamaStatusService(ollamaClient, ollamaCliService, processMetricsService, gpuMetricsService, osMetricsService, _contextTrackingService, diagnostics);
 
         // Make the saved theme active for the whole app lifetime. Windows created
         // before the first Details-window open (e.g. a tray-only start with the mini
@@ -101,7 +103,8 @@ public partial class App : System.Windows.Application
             diagnostics,
             _ollamaLogService,
             text => System.Windows.Clipboard.SetText(text),
-            url => ProcessLauncher.Open(url, diagnostics));
+            url => ProcessLauncher.Open(url, diagnostics),
+            autoLaunchService);
 
         _mainWindow.DataContext = _mainWindowViewModel;
         _miniMonitorWindow.DataContext = _mainWindowViewModel;

@@ -1,5 +1,6 @@
 using ElBruno.OllamaMonitor.Configuration;
 using ElBruno.OllamaMonitor.Models;
+using ElBruno.OllamaMonitor.Services;
 
 namespace ElBruno.OllamaMonitor.ViewModels;
 
@@ -7,6 +8,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
 {
     private readonly AppSettings _settings;
     private readonly AppSettingsService _settingsService;
+    private readonly AutoLaunchService _autoLaunchService;
 
     private bool _enableNotifications;
     private bool _notifyOllamaOffline;
@@ -21,16 +23,18 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     private bool _notifyOllamaStarted;
     private int _notificationDebounceSeconds;
     private bool _showFloatingWindowOnStart;
+    private bool _launchAtWindowsStartup;
     private ModelUnloadStrategy _selectedUnloadStrategy;
     private bool _showCpuInMiniMonitor;
     private bool _showMemoryInMiniMonitor;
     private bool _showContextInMiniMonitor;
     private bool _showOllamaLogsInMiniMonitor;
 
-    public SettingsWindowViewModel(AppSettings settings, AppSettingsService settingsService)
+    public SettingsWindowViewModel(AppSettings settings, AppSettingsService settingsService, AutoLaunchService autoLaunchService)
     {
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _autoLaunchService = autoLaunchService ?? throw new ArgumentNullException(nameof(autoLaunchService));
 
         LoadSettings();
     }
@@ -113,6 +117,12 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         set => SetProperty(ref _showFloatingWindowOnStart, value);
     }
 
+    public bool LaunchAtWindowsStartup
+    {
+        get => _launchAtWindowsStartup;
+        set => SetProperty(ref _launchAtWindowsStartup, value);
+    }
+
     public bool ShowCpuInMiniMonitor
     {
         get => _showCpuInMiniMonitor;
@@ -161,8 +171,12 @@ public sealed class SettingsWindowViewModel : ViewModelBase
             ShowContextInMiniMonitor = ShowContextInMiniMonitor,
             ShowOllamaLogsInMiniMonitor = ShowOllamaLogsInMiniMonitor
         };
-
         await _settingsService.SaveAsync(updatedSettings, cancellationToken);
+
+        // The Run-key registration is applied here (idempotent; the save path
+        // may call SaveAsync twice) and is NOT mirrored into settings.json —
+        // the registry entry itself is the setting.
+        _autoLaunchService.SetEnabled(LaunchAtWindowsStartup);
     }
 
     private void LoadSettings()
@@ -170,6 +184,10 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         EnableNotifications = _settings.EnableNotifications;
         NotificationDebounceSeconds = _settings.NotificationDebounceSeconds;
         ShowFloatingWindowOnStart = _settings.ShowFloatingWindowOnStart;
+
+        // Live state from the registry, so a registration removed externally
+        // (Task Manager Startup apps, etc.) is reflected here on open.
+        LaunchAtWindowsStartup = _autoLaunchService.IsEnabled();
         SelectedUnloadStrategy = _settings.UnloadStrategy;
 
         NotifyOllamaOffline = (_settings.NotificationEvents & NotificationEventType.OllamaOffline) != 0;

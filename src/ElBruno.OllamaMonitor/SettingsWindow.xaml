@@ -260,6 +260,15 @@
                         </DataTemplate>
                     </GroupBox.HeaderTemplate>
                     <StackPanel>
+                        <CheckBox x:Name="LaunchAtStartupCheckBox"
+                                  Content="Launch at Windows Startup"
+                                  IsChecked="{Binding LaunchAtWindowsStartup}"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
+                                  ToolTip="Start Ollama Monitor automatically when you sign in to Windows."
+                                  Margin="0,0,0,10"
+                                  FontSize="12"
+                                  Cursor="Hand" />
+
                         <CheckBox x:Name="ShowFloatingCheckBox"
                                   Content="Show floating mini monitor on start"
                                   IsChecked="{Binding ShowFloatingWindowOnStart}"

@@ -23,7 +23,6 @@ The file is created automatically with default values on first run.
   "endpoint": "http://localhost:11434",
   "unloadStrategy": 0,
   "refreshIntervalSeconds": 2,
-  "startMinimizedToTray": true,
   "showFloatingWindowOnStart": false,
   "enableGpuMetrics": true,
   "enableDiskMetrics": true,
@@ -86,25 +85,33 @@ Controls how the monitor unloads/stops running models:
 - `Cli`: Always uses `ollama stop` (local endpoints only).
 - `Api`: Always uses API unload (`/api/generate` with `keep_alive=0`).
 
-### `startMinimizedToTray`
+### `launchAtWindowsStartup`
 
-**Type:** `bool`  
-**Default:** `true`
+**Where:** Settings → General ("Launch at Windows Startup" toggle)
+**Default:** Off
 
-Whether the app starts minimized to the system tray (hidden from desktop).
+Registers Ollama Monitor under the per-user Windows Run key
+(`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value `OllamaMonitor`)
+so it starts automatically at Windows sign-in.
 
-- `true`: App launches hidden; use the tray icon to open the details window or mini monitor
-- `false`: App launches with the details window visible
+Unlike the settings above, this one is **not stored in `settings.json`** —
+the registry entry itself is the setting:
+
+- Enabling writes the entry; disabling deletes it
+- The checkbox reflects the registry's actual state whenever Settings
+  opens, so removing the entry externally (e.g. Task Manager → Startup apps)
+  is picked up the next time you open Settings
+- At sign-in the app starts in the system tray; the floating mini monitor
+  appears alongside only when `showFloatingWindowOnStart` is enabled
 
 ### `showFloatingWindowOnStart`
 
 **Type:** `bool`  
 **Default:** `false`
 
-Whether to show the standard details window automatically when the app starts.
+Whether to show the floating mini monitor automatically when the app starts.
 
-- Works independently of `startMinimizedToTray`
-- Useful if you want the details visible on startup
+- Useful if you want the mini monitor visible on startup
 
 ### `enableGpuMetrics`
 
@@ -294,7 +301,6 @@ ollamamon config reset
   "endpoint": "http://192.168.1.50:11434",
   "unloadStrategy": 0,
   "refreshIntervalSeconds": 3,
-  "startMinimizedToTray": true,
   "showFloatingWindowOnStart": false,
   "enableGpuMetrics": true,
   "enableDiskMetrics": true,
