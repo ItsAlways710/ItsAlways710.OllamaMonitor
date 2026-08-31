@@ -2,7 +2,23 @@
 
 ## Version History
 
-### 0.11.0 — Launch at Windows Startup & System-wide Metrics
+### 0.11.1 — Details Window Scrollbar Layout Fix
+
+**Release Date:** 2026-08-31
+
+This release fixes the scrollbar placement in the Details window so the vertical scrollbar sits flush against the window's right edge and the content panels read as centered.
+
+#### What's New
+
+- ✅ Details window scrollbar now touches the window's right edge (previously a 20px margin sat outside the scrollbar, leaving no gap between scrollbar and panels)
+- ✅ Equal 20px insets on both sides of the content panels (left window margin now matches the panel-to-scrollbar gap), so the panels read as centered instead of shifted left
+
+#### Notes
+
+- Details (main) window only — Settings and Mini Monitor windows are unchanged
+
+---
+
 
 **Release Date:** 2026-08-31
 
