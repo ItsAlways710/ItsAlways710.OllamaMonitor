@@ -1,8 +1,12 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using ItsAlways710.OllamaMonitor.Configuration;
+using ItsAlways710.OllamaMonitor.Diagnostics;
+using ItsAlways710.OllamaMonitor.Interop;
 
 namespace ItsAlways710.OllamaMonitor;
 
@@ -10,21 +14,77 @@ public partial class MiniMonitorWindow : Window
 {
     private static readonly TimeSpan PositionSaveDebounce = TimeSpan.FromMilliseconds(750);
 
+    private static readonly TimeSpan TopmostWatchdogInterval = TimeSpan.FromMilliseconds(500);
+
     private readonly AppSettingsService? _settingsService;
+    private readonly DiagnosticsLogService? _diagnostics;
+    private readonly DispatcherTimer _topmostWatchdog;
     private bool _allowClose;
     private bool _positionPendingSave;
+    private DateTime _lastSizeChangeUtc;
     private DispatcherTimer? _positionSaveTimer;
 
-    public MiniMonitorWindow() : this(null)
+    public MiniMonitorWindow() : this(null, null)
     {
     }
 
-    public MiniMonitorWindow(AppSettingsService? settingsService)
+    /// <summary>
+    /// Creates the Mini Monitor window. Both services are optional so the window can be
+    /// constructed without application infrastructure; topmost defense and position
+    /// saving degrade gracefully when they are absent.
+    /// </summary>
+    public MiniMonitorWindow(AppSettingsService? settingsService, DiagnosticsLogService? diagnostics)
     {
         InitializeComponent();
         _settingsService = settingsService;
+        _diagnostics = diagnostics;
         LocationChanged += OnWindowLocationChanged;
         IsVisibleChanged += OnWindowIsVisibleChanged;
+        Deactivated += OnWindowDeactivated;
+        SizeChanged += OnWindowSizeChanged;
+
+        // While the window is visible, poll the WS_EX_TOPMOST bit. This is the layer that
+        // catches removals made via SetWindowLong(GWL_EXSTYLE) - those never surface an
+        // interceptable window message, so the WM_WINDOWPOSCHANGING guard cannot see them.
+        // Cost: one syscall per tick for a tray-resident window.
+        _topmostWatchdog = new DispatcherTimer { Interval = TopmostWatchdogInterval };
+        _topmostWatchdog.Tick += (_, _) => EnforceTopmost("watchdog");
+        _topmostWatchdog.Start();
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
+        // While this window is supposed to stay topmost, intercept any attempt by any
+        // process (shell, window manager, ...) to move it out of the topmost band, and
+        // rewrite the WINDOWPOS so it lands at HWND_TOPMOST instead. WPF's own moves use
+        // HWND_TOP with SWP_NOZORDER and are not affected.
+        HwndSource.FromHwnd(new WindowInteropHelper(this).Handle)?.AddHook(WndProcTopmostGuard);
+    }
+
+    private IntPtr WndProcTopmostGuard(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WindowInterop.WmWindowPosChanging && !handled && Topmost)
+        {
+            long insertAfter = Marshal.ReadInt64(lParam, WindowInterop.WindowPosInsertAfterOffset);
+            if (TopmostGuardPolicy.IsDemotingPosition(insertAfter))
+            {
+                uint flags = (uint)Marshal.ReadInt32(lParam, WindowInterop.WindowPosFlagsOffset);
+                LogTopmostEvent("guard-rewrite", WindowInterop.GetExtendedStyle(hwnd), insertAfter, flags);
+
+                // HWND_TOPMOST in WindowPOS.hwndInsertAfter only applies when the Z order is
+                // actually changed: clear SWP_NOZORDER so the rewrite takes effect.
+                if ((flags & WindowInterop.SwpNoZOrder) != 0)
+                {
+                    Marshal.WriteInt32(lParam, WindowInterop.WindowPosFlagsOffset, (int)(flags & ~WindowInterop.SwpNoZOrder));
+                }
+
+                Marshal.WriteInt64(lParam, WindowInterop.WindowPosInsertAfterOffset, TopmostGuardPolicy.HwndTopmost);
+            }
+        }
+
+        return IntPtr.Zero;
     }
 
     /// <summary>
@@ -73,8 +133,87 @@ public partial class MiniMonitorWindow : Window
         if (!IsVisible)
         {
             FlushPositionSave();
+            return;
         }
+
+        // A hide/show cycle can come back out of the topmost band (or, worst case, the bit
+        // was never applied): re-assert and record whether the bit actually landed.
+        EnforceTopmost("shown");
     }
+
+    private void OnWindowDeactivated(object? sender, EventArgs e)
+    {
+        // Losing focus (e.g. the user clicked another application) is the moment an
+        // external actor typically demotes topmost windows - re-assert with zero delay.
+        EnforceTopmost("deactivated");
+    }
+
+    private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        // Track the last self-resize (SizeToContent=Height on a refresh tick) so a demotion
+        // log can show whether it happened right after one - useful to attribute the event
+        // to a window-tracking tool reacting to our resizes.
+        _lastSizeChangeUtc = DateTime.UtcNow;
+    }
+
+    private void EnforceTopmost(string trigger)
+    {
+        if (!IsVisible || !Topmost)
+        {
+            return;
+        }
+
+        IntPtr hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        int exstyle = WindowInterop.GetExtendedStyle(hwnd);
+        bool hasTopmost = (exstyle & WindowInterop.WsExTopmost) != 0;
+        if (!hasTopmost)
+        {
+            _diagnostics?.WriteWarning(
+                $"MiniMonitor topmost re-asserted [trigger={trigger}]: WS_EX_TOPMOST was missing; " +
+                $"GWL_EXSTYLE=0x{exstyle:X}; foreground={WindowInterop.DescribeForegroundWindow()}; " +
+                $"msSinceLastSizeChange={MsSinceLastSizeChange()}");
+            WindowInterop.RestoreTopmost(hwnd);
+            return;
+        }
+
+        if (trigger != "shown")
+        {
+            return;
+        }
+
+        _diagnostics?.WriteInfo(
+            $"MiniMonitor topmost OK [trigger=shown]: WS_EX_TOPMOST present; " +
+            $"GWL_EXSTYLE=0x{exstyle:X}; foreground={WindowInterop.DescribeForegroundWindow()}");
+    }
+
+    private void LogTopmostEvent(string trigger, int exstyle, long insertAfter, uint flags)
+    {
+        string topmostState = (exstyle & WindowInterop.WsExTopmost) != 0 ? "present" : "missing";
+
+        // Name the demotion's actor in the log itself, while the reference handle is
+        // still guaranteed valid: its owner (pid/process/class/title) and whether the
+        // sending thread is one of ours.
+        RefWindowIdentity refWindow = RefWindowForensics.Capture(new IntPtr(insertAfter));
+        uint senderThreadId = RefWindowForensics.GetCurrentThreadId();
+
+        _diagnostics?.WriteWarning(
+            $"MiniMonitor topmost demotion blocked [trigger={trigger}]: " +
+            $"WS_EX_TOPMOST={topmostState}; " +
+            $"GWL_EXSTYLE=0x{exstyle:X}; " +
+            $"WindowPOS.hwndInsertAfter=0x{insertAfter:X}; " +
+            $"refWin={RefWindowForensics.Format(refWindow)}; " +
+            $"flags=0x{flags:X8}; " +
+            $"senderTid=0x{senderThreadId:X}; senderIsOwnProcess={RefWindowForensics.IsOwnProcessThread(senderThreadId)}; " +
+            $"foreground={WindowInterop.DescribeForegroundWindow()}; msSinceLastSizeChange={MsSinceLastSizeChange()}");
+    }
+
+    private int MsSinceLastSizeChange() =>
+        _lastSizeChangeUtc == default ? -1 : (int)Math.Round((DateTime.UtcNow - _lastSizeChangeUtc).TotalMilliseconds);
 
     protected override void OnClosing(CancelEventArgs e)
     {

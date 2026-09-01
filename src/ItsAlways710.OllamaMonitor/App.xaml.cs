@@ -96,7 +96,7 @@ public partial class App : System.Windows.Application
         // window shown later) would otherwise have no theme dictionary at all.
         ThemeService.ApplyTheme(ThemeService.GetSavedThemePreference());
         _mainWindow = new MainWindow(Math.Max(1, settings.RefreshIntervalSeconds));
-        _miniMonitorWindow = new MiniMonitorWindow(settingsService);
+        _miniMonitorWindow = new MiniMonitorWindow(settingsService, diagnostics);
         _mainWindowViewModel = new MainWindowViewModel(
             statusService,
             settingsService,
