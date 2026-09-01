@@ -147,7 +147,17 @@ internal static class WindowInterop
                 return null;
             }
 
-            return Marshal.PtrToStringUni(titlePtr);
+            try
+            {
+                return Marshal.PtrToStringUni(titlePtr);
+            }
+            finally
+            {
+                // DWM serves DWMWA_TITLE buffers from the COM task heap; the marshal
+                // copies the string, so the original must be released back or it leaks
+                // one buffer per call.
+                Marshal.FreeCoTaskMem(titlePtr);
+            }
         }
         catch
         {
