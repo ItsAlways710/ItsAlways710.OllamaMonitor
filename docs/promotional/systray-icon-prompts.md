@@ -72,5 +72,5 @@ tray-state-red.png
 The app-ready tray assets should be exported as `.ico` files under:
 
 ```text
-src/ElBruno.OllamaMonitor/Assets/TrayIcons/
+src/ItsAlways710.OllamaMonitor/Assets/TrayIcons/
 ```

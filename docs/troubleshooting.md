@@ -23,7 +23,7 @@
 
 3. **Try from command line with verbose output:**
    ```bash
-   dotnet run --project src/ElBruno.OllamaMonitor/ 2>&1
+   dotnet run --project src/ItsAlways710.OllamaMonitor/ 2>&1
    ```
 
 4. **Reinstall the global tool:**
@@ -40,7 +40,7 @@
 
 1. **Check if the app is running:**
    - Open Task Manager (Ctrl+Shift+Esc)
-   - Look for `ElBruno.OllamaMonitor` process
+   - Look for `ItsAlways710.OllamaMonitor` process
    - If it's not there, the app crashed (check logs)
 
 2. **Check Windows tray settings:**

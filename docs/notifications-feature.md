@@ -136,7 +136,7 @@ Slider in Settings (5-300 seconds):
 
 ### Modified Files:
 - `Configuration/AppSettings.cs` - Added notification settings
-- `ElBruno.OllamaMonitor.csproj` - Added SDK reference
+- `ItsAlways710.OllamaMonitor.csproj` - Added SDK reference
 - `ViewModels/MainWindowViewModel.cs` - Added notification logic
 - `MainWindow.xaml` - Added Settings button
 - `App.xaml.cs` - Dispose notification service on exit

@@ -4,7 +4,7 @@ A fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonit
 
 [![NuGet](https://img.shields.io/nuget/v/ElBruno.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ElBruno.OllamaMonitor)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/ElBruno.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ElBruno.OllamaMonitor)
-[![Publish to NuGet](https://github.com/ItsAlways710/ElBruno.OllamaMonitor/actions/workflows/publish.yml/badge.svg)](https://github.com/ItsAlways710/ElBruno.OllamaMonitor/actions/workflows/publish.yml)
+[![Publish to NuGet](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor/actions/workflows/publish.yml/badge.svg)](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor/actions/workflows/publish.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 
@@ -60,10 +60,10 @@ ollamamon
 ### From Source
 
 ```bash
-git clone https://github.com/ItsAlways710/ElBruno.OllamaMonitor.git
-cd ElBruno.OllamaMonitor
-dotnet build src/ElBruno.OllamaMonitor/
-dotnet run --project src/ElBruno.OllamaMonitor/
+git clone https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor.git
+cd ItsAlways710.OllamaMonitor
+dotnet build src/ItsAlways710.OllamaMonitor/
+dotnet run --project src/ItsAlways710.OllamaMonitor/
 ```
 
 ## Quick Start
@@ -146,7 +146,7 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 
 ## Support
 
-Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/ItsAlways710/ElBruno.OllamaMonitor/issues).
+Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor/issues).
 
 Questions about Ollama? Check the [Ollama documentation](https://github.com/ollama/ollama).
 
@@ -162,4 +162,4 @@ Questions about Ollama? Check the [Ollama documentation](https://github.com/olla
 
 ## About This Fork
 
-Forked and maintained by [ItsAlways710](https://github.com/ItsAlways710) — [github.com/ItsAlways710/ElBruno.OllamaMonitor](https://github.com/ItsAlways710/ElBruno.OllamaMonitor).
+Forked and maintained by [ItsAlways710](https://github.com/ItsAlways710) — [github.com/ItsAlways710/ItsAlways710.OllamaMonitor](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor).

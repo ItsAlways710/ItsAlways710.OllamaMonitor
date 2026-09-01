@@ -1,0 +1,346 @@
+<Window x:Class="ItsAlways710.OllamaMonitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
+        mc:Ignorable="d"
+        Style="{DynamicResource ThemeWindowStyle}"
+        Title="ItsAlways710.OllamaMonitor - Details"
+        Width="760"
+        Height="560"
+        MinWidth="640"
+        MinHeight="480"
+        ResizeMode="CanResize"
+        ShowInTaskbar="True"
+        Icon="Assets/TrayIcons/tray-green.ico"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Window.Resources>
+    <DockPanel Margin="20,20,0,20">
+        <StackPanel DockPanel.Dock="Top"
+                    Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,0,12">
+                <Label Content="Theme:"
+                       VerticalAlignment="Center"
+                       Margin="0,0,6,0"
+                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}" />
+                <ComboBox x:Name="ThemeSelector"
+                          Width="100"
+                          Margin="0,0,12,0"
+                          SelectionChanged="ThemeSelector_SelectionChanged">
+                    <ComboBoxItem>Light</ComboBoxItem>
+                    <ComboBoxItem>Dark</ComboBoxItem>
+                    <ComboBoxItem>System</ComboBoxItem>
+                </ComboBox>
+                <Button Content="Refresh"
+                        Command="{Binding RefreshCommand}"
+                        Margin="0,0,8,0"
+                        Padding="14,6"
+                        Background="{DynamicResource ThemeAccentBrush}" />
+                <Button Content="Copy Status"
+                        Command="{Binding CopyStatusCommand}"
+                        Margin="0,0,8,0"
+                        Padding="14,6"
+                        Background="{DynamicResource ThemeAccentBrush}" />
+                <Button Content="Open API"
+                        Command="{Binding OpenEndpointCommand}"
+                        Margin="0,0,8,0"
+                        Padding="14,6"
+                        Background="{DynamicResource ThemeAccentBrush}" />
+                <Button Content="Stop All Models"
+                        Command="{Binding UnloadAllModelsCommand}"
+                        ToolTip="Stop all running models."
+                        Margin="0,0,8,0"
+                        Padding="14,6"
+                        Background="#B45309" />
+                <Button Content="Start Ollama"
+                        Command="{Binding StartOllamaCommand}"
+                        Margin="0,0,8,0"
+                        Padding="14,6"
+                        Background="#0B7A3E" />
+                <Button Content="Settings"
+                        Command="{Binding OpenSettingsCommand}"
+                        Margin="0,0,8,0"
+                        Padding="14,6"
+                        Background="{DynamicResource ThemeAccentBrush}" />
+            </StackPanel>
+
+            <TextBlock Text="Closing this window keeps the app running in the system tray."
+                       HorizontalAlignment="Right"
+                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                       FontSize="11" />
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Padding="0,0,20,0">
+            <StackPanel>
+                <Border Background="{DynamicResource ThemePanelBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16"
+                        Margin="0,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="● Connection Status"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                       Margin="0,0,0,8" />
+                            <TextBlock Text="{Binding StateText}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource ThemeForegroundBrush}" />
+                            <TextBlock Text="{Binding ApiReachableText}"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                       Margin="0,8,0,0"
+                                       FontSize="12" />
+                            <TextBlock Text="{Binding Endpoint}"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                       Margin="0,4,0,0"
+                                       FontSize="12" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="0" Grid.Column="1"
+                                    HorizontalAlignment="Right">
+                            <TextBlock Text="Last Checked"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                       HorizontalAlignment="Right"
+                                       FontSize="11" />
+                            <TextBlock Text="{Binding LastCheckedText}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource ThemeForegroundBrush}"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding VersionText}"
+                                       Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                       HorizontalAlignment="Right"
+                                       Margin="0,12,0,0"
+                                       FontSize="11" />
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                   Text="{Binding AppVersionText}"
+                                   Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                   FontSize="10"
+                                   Margin="0,12,0,0" />
+                    </Grid>
+                </Border>
+
+                <Border Background="#FFFEE2E2"
+                        BorderBrush="#FFFCA5A5"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,0,0,20"
+                        Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="{Binding ErrorText}"
+                               Foreground="#FF991B1B"
+                               TextWrapping="Wrap"
+                               FontSize="11" />
+                </Border>
+
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <GroupBox Header="System Metrics"
+                              Margin="0,0,8,0"
+                              Background="{DynamicResource ThemePanelBrush}"
+                              BorderBrush="{DynamicResource ThemeBorderBrush}"
+                              Foreground="{DynamicResource ThemeForegroundBrush}">
+                        <StackPanel Margin="8">
+                            <TextBlock Text="{Binding ProcessStatusText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="11" />
+                            <TextBlock Text="{Binding CpuText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FF60A5FA" />
+                            <TextBlock Text="{Binding MemoryText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FFA78BFA" />
+                            <TextBlock Text="{Binding PrivateMemoryText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="11" />
+                            <TextBlock Text="{Binding DiskReadText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="11" />
+                            <TextBlock Text="{Binding DiskWriteText}"
+                                       FontSize="11" />
+                            <TextBlock Text="{Binding ContextText}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,8"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FF2DD4BF" />
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="GPU Status"
+                              Grid.Column="1"
+                              VerticalAlignment="Top"
+                              Margin="8,0,0,0"
+                              Background="{DynamicResource ThemePanelBrush}"
+                              BorderBrush="{DynamicResource ThemeBorderBrush}"
+                              Foreground="{DynamicResource ThemeForegroundBrush}">
+                        <StackPanel Margin="8">
+                            <TextBlock Text="{Binding GpuText}"
+                                       Margin="0,0,0,8"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FF34D399" />
+                            <TextBlock Text="{Binding GpuMemoryText}"
+                                       FontSize="11"
+                                       Foreground="#FF34D399" />
+                            <ScottPlot:WpfPlot x:Name="GpuUsagePlot"
+                                                Height="140"
+                                                Margin="0,10,0,0" />
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+
+                <GroupBox Header="Loaded Models"
+                          Background="{DynamicResource ThemePanelBrush}"
+                          BorderBrush="{DynamicResource ThemeBorderBrush}"
+                          Foreground="{DynamicResource ThemeForegroundBrush}">
+                    <DockPanel Margin="8">
+                        <StackPanel DockPanel.Dock="Top"
+                                   Margin="0,0,0,12">
+                            <TextBlock Text="Running Model Actions"
+                                      FontSize="11"
+                                      Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                      Margin="0,0,0,6" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Stop Selected"
+                                       Command="{Binding StopSelectedModelCommand}"
+                                       Margin="0,0,8,0"
+                                       Padding="10,4"
+                                       Background="#B45309" />
+                                <Button Content="Refresh Models"
+                                       Command="{Binding RefreshCommand}"
+                                       Margin="0,0,8,0"
+                                       Padding="10,4"
+                                       Background="{DynamicResource ThemeAccentBrush}" />
+                            </StackPanel>
+
+                            <TextBlock Text="Model Lifecycle"
+                                      FontSize="11"
+                                      Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                      Margin="0,12,0,6" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding PullModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        VerticalContentAlignment="Center" />
+                                <Button Grid.Column="1"
+                                       Content="Pull"
+                                       Command="{Binding PullModelCommand}"
+                                       Padding="10,4"
+                                       Background="#0B7A3E" />
+                            </Grid>
+
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding RemoveModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        VerticalContentAlignment="Center" />
+                                <Button Grid.Column="1"
+                                       Content="Remove"
+                                       Command="{Binding RemoveModelCommand}"
+                                       Padding="10,4"
+                                       Background="#991B1B" />
+                            </Grid>
+
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="*" />
+                                   <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{Binding CopySourceModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        VerticalContentAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                        Text="{Binding CopyTargetModelName, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,0,8,0"
+                                        Padding="8,4"
+                                        Background="{DynamicResource ThemePanelBrush}"
+                                        Foreground="{DynamicResource ThemeForegroundBrush}"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        VerticalContentAlignment="Center" />
+                                <Button Grid.Column="2"
+                                       Content="Copy"
+                                       Command="{Binding CopyModelCommand}"
+                                       Padding="10,4"
+                                       Background="{DynamicResource ThemeAccentBrush}" />
+                            </Grid>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Top"
+                                   Text="{Binding ModelsSummaryText}"
+                                   Margin="0,0,0,12"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource ThemeSecondaryForegroundBrush}" />
+                        <ListView ItemsSource="{Binding Models}"
+                                  SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
+                                  Background="{DynamicResource ThemePanelBrush}"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Name"
+                                                    Width="260"
+                                                    DisplayMemberBinding="{Binding Name}" />
+                                    <GridViewColumn Header="Size"
+                                                    Width="120"
+                                                    DisplayMemberBinding="{Binding Size}" />
+                                    <GridViewColumn Header="Processor"
+                                                    Width="140"
+                                                    DisplayMemberBinding="{Binding Processor}" />
+                                    <GridViewColumn Header="Expires"
+                                                    Width="160"
+                                                    DisplayMemberBinding="{Binding ExpiresAtDisplay}" />
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </DockPanel>
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

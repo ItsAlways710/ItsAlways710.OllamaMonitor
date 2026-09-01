@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ItsAlways710.OllamaMonitor.Tool</AssemblyName>
+    <RootNamespace>ItsAlways710.OllamaMonitor</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <PackageId>ElBruno.OllamaMonitor</PackageId>
+    <Title>ItsAlways710.OllamaMonitor</Title>
+    <AssemblyTitle>ItsAlways710.OllamaMonitor</AssemblyTitle>
+    <Product>ItsAlways710.OllamaMonitor</Product>
+    <Description>Windows-first Ollama monitor global tool launcher and configuration CLI. Fork of ElBruno.OllamaMonitor by Bruno Capuano.</Description>
+    <Authors>ItsAlways710, Bruno Capuano (original)</Authors>
+    <Company>ItsAlways710</Company>
+    <PackageTags>ollama;monitoring;dotnet-tool;windows</PackageTags>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>ollamamon</ToolCommandName>
+    <PackageOutputPath>..\..\artifacts\packages</PackageOutputPath>
+    <PackageIcon>package-icon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <Version>0.10.0</Version>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="GlobalUsings.cs" />
+    <Compile Include="Models\NotificationEventType.cs" />
+    <Compile Include="..\ItsAlways710.OllamaMonitor\AppPaths.cs" Link="Shared\AppPaths.cs" />
+    <Compile Include="..\ItsAlways710.OllamaMonitor\Cli\*.cs" Link="Cli\%(Filename)%(Extension)" />
+    <Compile Include="..\ItsAlways710.OllamaMonitor\Configuration\*.cs" Link="Configuration\%(Filename)%(Extension)" />
+    <Compile Include="..\ItsAlways710.OllamaMonitor\Diagnostics\DiagnosticsLogService.cs" Link="Diagnostics\DiagnosticsLogService.cs" />
+    <Compile Include="..\ItsAlways710.OllamaMonitor\Interop\ConsoleManager.cs" Link="Interop\ConsoleManager.cs" />
+    <Compile Include="..\ItsAlways710.OllamaMonitor\Interop\NativeMethods.cs" Link="Interop\NativeMethods.cs" />
+    <None Include="assets\package-icon.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Link="README.md" />
+  </ItemGroup>
+
+</Project>

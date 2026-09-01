@@ -46,7 +46,7 @@ jobs:
             $version = '${{ inputs.version }}'
           }
           else {
-            [xml]$project = Get-Content 'src\ElBruno.OllamaMonitor.Tool\ElBruno.OllamaMonitor.Tool.csproj'
+            [xml]$project = Get-Content 'src\ItsAlways710.OllamaMonitor.Tool\ItsAlways710.OllamaMonitor.Tool.csproj'
             $version = $project.Project.PropertyGroup.Version
           }
 
@@ -60,10 +60,10 @@ jobs:
           Write-Host "Publishing version $version"
 
       - name: Restore
-        run: dotnet restore ElBruno.OllamaMonitor.sln
+        run: dotnet restore ItsAlways710.OllamaMonitor.sln
 
       - name: Build
-        run: dotnet build ElBruno.OllamaMonitor.sln -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
+        run: dotnet build ItsAlways710.OllamaMonitor.sln -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
 
       - name: Cache build outputs
         uses: actions/cache@v4

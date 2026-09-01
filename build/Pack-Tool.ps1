@@ -7,9 +7,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$toolProject = Join-Path $repoRoot 'src\ElBruno.OllamaMonitor.Tool\ElBruno.OllamaMonitor.Tool.csproj'
-$desktopProject = Join-Path $repoRoot 'src\ElBruno.OllamaMonitor\ElBruno.OllamaMonitor.csproj'
-$desktopPublishDir = Join-Path $repoRoot 'src\ElBruno.OllamaMonitor\obj\desktop-publish\'
+$toolProject = Join-Path $repoRoot 'src\ItsAlways710.OllamaMonitor.Tool\ItsAlways710.OllamaMonitor.Tool.csproj'
+$desktopProject = Join-Path $repoRoot 'src\ItsAlways710.OllamaMonitor\ItsAlways710.OllamaMonitor.csproj'
+$desktopPublishDir = Join-Path $repoRoot 'src\ItsAlways710.OllamaMonitor\obj\desktop-publish\'
 $packageDirectory = Join-Path $repoRoot 'artifacts\packages'
 $versionArgs = @()
 

@@ -6,7 +6,7 @@ This guide covers how the `ElBruno.OllamaMonitor` global tool package is publish
 
 | Package | Project | NuGet |
 |---------|---------|-------|
-| `ElBruno.OllamaMonitor` | `src/ElBruno.OllamaMonitor.Tool/ElBruno.OllamaMonitor.Tool.csproj` | [nuget.org/packages/ElBruno.OllamaMonitor](https://www.nuget.org/packages/ElBruno.OllamaMonitor) |
+| `ElBruno.OllamaMonitor` | `src/ItsAlways710.OllamaMonitor.Tool/ItsAlways710.OllamaMonitor.Tool.csproj` | [nuget.org/packages/ElBruno.OllamaMonitor](https://www.nuget.org/packages/ElBruno.OllamaMonitor) |
 
 ---
 
@@ -20,7 +20,7 @@ This guide covers how the `ElBruno.OllamaMonitor` global tool package is publish
    | Field | Value |
    |-------|-------|
    | Repository owner | `ItsAlways710` |
-   | Repository name | `ElBruno.OllamaMonitor` |
+   | Repository name | `ItsAlways710.OllamaMonitor` |
    | Workflow file | `publish.yml` |
    | Environment | `release` |
 
@@ -87,7 +87,7 @@ The workflow uses this priority order:
 |----------|--------|------|
 | 1 | Release tag | `release` event — `v0.5.0` becomes `0.5.0` |
 | 2 | Manual input | `workflow_dispatch` with `version` specified |
-| 3 | csproj fallback | Reads `<Version>` from `src/ElBruno.OllamaMonitor.Tool/ElBruno.OllamaMonitor.Tool.csproj` |
+| 3 | csproj fallback | Reads `<Version>` from `src/ItsAlways710.OllamaMonitor.Tool/ItsAlways710.OllamaMonitor.Tool.csproj` |
 
 Versions are validated against `^[0-9]+\.[0-9]+\.[0-9]+`.
 

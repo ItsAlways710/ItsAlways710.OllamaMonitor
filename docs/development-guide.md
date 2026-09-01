@@ -13,8 +13,8 @@
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/ItsAlways710/ElBruno.OllamaMonitor.git
-cd ElBruno.OllamaMonitor
+git clone https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor.git
+cd ItsAlways710.OllamaMonitor
 ```
 
 ### Restore Dependencies
@@ -48,7 +48,7 @@ dotnet build -c Release
 ### Run the App
 
 ```bash
-dotnet run --project src/ElBruno.OllamaMonitor/
+dotnet run --project src/ItsAlways710.OllamaMonitor/
 ```
 
 The app will launch. Check the system tray for the icon.
@@ -57,22 +57,22 @@ The app will launch. Check the system tray for the icon.
 
 ```bash
 # Show help
-dotnet run --project src/ElBruno.OllamaMonitor/ -- --help
+dotnet run --project src/ItsAlways710.OllamaMonitor/ -- --help
 
 # Show current config
-dotnet run --project src/ElBruno.OllamaMonitor/ -- config
+dotnet run --project src/ItsAlways710.OllamaMonitor/ -- config
 
 # Set endpoint
-dotnet run --project src/ElBruno.OllamaMonitor/ -- config set endpoint http://localhost:11434
+dotnet run --project src/ItsAlways710.OllamaMonitor/ -- config set endpoint http://localhost:11434
 
 # Reset config
-dotnet run --project src/ElBruno.OllamaMonitor/ -- config reset
+dotnet run --project src/ItsAlways710.OllamaMonitor/ -- config reset
 ```
 
 ## Project Structure
 
 ```
-src/ElBruno.OllamaMonitor/
+src/ItsAlways710.OllamaMonitor/
 ├── Cli/
 │   ├── CliCommand.cs              # Command model
 │   ├── CliCommandKind.cs          # Command types enum
@@ -112,7 +112,7 @@ src/ElBruno.OllamaMonitor/
 ├── App.xaml / App.xaml.cs         # WPF Application entry
 └── MainWindow.xaml / MainWindow.xaml.cs  # Floating details window
 
-tests/ElBruno.OllamaMonitor.Tests/
+tests/ItsAlways710.OllamaMonitor.Tests/
 ├── OllamaStatusServiceTests.cs    # Unload strategy + fallback behavior
 └── AppSettingsTests.cs            # New defaults (unload strategy, notifications)
 ```
@@ -143,7 +143,7 @@ tests/ElBruno.OllamaMonitor.Tests/
 
 4. Update help text in `HelpCommand.cs` if needed
 
-5. Test: `dotnet run --project src/ElBruno.OllamaMonitor/ -- <your-new-command>`
+5. Test: `dotnet run --project src/ItsAlways710.OllamaMonitor/ -- <your-new-command>`
 
 ### Modifying Metrics Collection
 
@@ -199,7 +199,7 @@ To view logs, open the logs directory with Windows Explorer or your editor.
 
 ### In Visual Studio
 
-1. Open the solution: `ElBruno.OllamaMonitor.sln`
+1. Open the solution: `ItsAlways710.OllamaMonitor.sln`
 2. Set breakpoints in your code
 3. Press **F5** to debug
 4. The app will launch; breakpoints will be hit
@@ -216,7 +216,7 @@ To view logs, open the logs directory with Windows Explorer or your editor.
 If the app is already running:
 
 1. In Visual Studio: **Debug → Attach to Process**
-2. Search for `ElBruno.OllamaMonitor` process
+2. Search for `ItsAlways710.OllamaMonitor` process
 3. Click **Attach**
 
 ## Testing Checklist
@@ -240,7 +240,7 @@ Before submitting a pull request or release:
 Run all tests:
 
 ```bash
-dotnet test ElBruno.OllamaMonitor.sln
+dotnet test ItsAlways710.OllamaMonitor.sln
 ```
 
 Current automated coverage includes:
@@ -270,7 +270,7 @@ Run the app—it should show gray tray icon and "Not Reachable" status.
 
 Set endpoint to a different machine:
 ```bash
-dotnet run --project src/ElBruno.OllamaMonitor/ -- config set endpoint http://192.168.1.100:11434
+dotnet run --project src/ItsAlways710.OllamaMonitor/ -- config set endpoint http://192.168.1.100:11434
 ```
 
 ### Test with Different Models

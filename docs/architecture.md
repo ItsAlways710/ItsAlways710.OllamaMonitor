@@ -2,7 +2,7 @@
 
 ## Overview
 
-ElBruno.OllamaMonitor is a .NET WPF desktop application built for Windows with a system tray interface, a standard details window, and a compact always-on-top mini monitor.
+ItsAlways710.OllamaMonitor is a .NET WPF desktop application built for Windows with a system tray interface, a standard details window, and a compact always-on-top mini monitor.
 
 The architecture is split into two tracks:
 
@@ -12,7 +12,7 @@ The architecture is split into two tracks:
 ## Project Structure
 
 ```
-src/ElBruno.OllamaMonitor/
+src/ItsAlways710.OllamaMonitor/
 ├── Cli/
 │   ├── CliCommand.cs              # Command model
 │   ├── CliCommandKind.cs          # Command type enum
@@ -290,7 +290,7 @@ This places the executable in the user's PATH and creates the `ollamamon` comman
 
 ## Automated Tests
 
-The solution now includes `tests/ElBruno.OllamaMonitor.Tests` with coverage for:
+The solution now includes `tests/ItsAlways710.OllamaMonitor.Tests` with coverage for:
 - unload strategy behavior (`Auto`, `Cli`, remote/local gating)
 - CLI stop + API fallback behavior
 - running model lookup strategy
@@ -299,7 +299,7 @@ The solution now includes `tests/ElBruno.OllamaMonitor.Tests` with coverage for:
 Run tests with:
 
 ```bash
-dotnet test ElBruno.OllamaMonitor.sln
+dotnet test ItsAlways710.OllamaMonitor.sln
 ```
 
 ---

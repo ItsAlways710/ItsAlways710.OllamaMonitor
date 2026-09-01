@@ -2,7 +2,7 @@
 
 ## Overview
 
-ElBruno.OllamaMonitor stores configuration in a JSON file that you can edit directly or modify via CLI commands.
+ItsAlways710.OllamaMonitor stores configuration in a JSON file that you can edit directly or modify via CLI commands.
 
 ## Configuration File Location
 
