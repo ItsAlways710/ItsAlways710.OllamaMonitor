@@ -37,7 +37,7 @@ Looking for social media posts, blog content, or image prompts?
 ## 🔗 Quick Links
 
 - **GitHub**: https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor (fork of [elbruno/ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor))
-- **NuGet Package**: https://www.nuget.org/packages/ElBruno.OllamaMonitor
+- **NuGet Package**: https://www.nuget.org/packages/ItsAlways710.OllamaMonitor
 - **Ollama**: https://ollama.ai
 - **Author**: https://github.com/elbruno
 

@@ -2,8 +2,8 @@
 
 A fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by [Bruno Capuano](https://github.com/elbruno), maintained by [ItsAlways710](https://github.com/ItsAlways710).
 
-[![NuGet](https://img.shields.io/nuget/v/ElBruno.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ElBruno.OllamaMonitor)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/ElBruno.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ElBruno.OllamaMonitor)
+[![NuGet](https://img.shields.io/nuget/v/ItsAlways710.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ItsAlways710.OllamaMonitor)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ItsAlways710.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ItsAlways710.OllamaMonitor)
 [![Publish to NuGet](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor/actions/workflows/publish.yml/badge.svg)](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor/actions/workflows/publish.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
@@ -48,7 +48,7 @@ Perfect for:
 ### Via NuGet (Recommended)
 
 ```bash
-dotnet tool install --global ElBruno.OllamaMonitor
+dotnet tool install --global ItsAlways710.OllamaMonitor
 ```
 
 Then launch anytime:

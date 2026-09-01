@@ -7,12 +7,12 @@ ItsAlways710.OllamaMonitor stores configuration in a JSON file that you can edit
 ## Configuration File Location
 
 ```
-%LOCALAPPDATA%\ElBruno\OllamaMonitor\settings.json
+%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\settings.json
 ```
 
 On Windows:
 - `%LOCALAPPDATA%` typically expands to `C:\Users\<YourUsername>\AppData\Local`
-- So the full path is usually: `C:\Users\<YourUsername>\AppData\Local\ElBruno\OllamaMonitor\settings.json`
+- So the full path is usually: `C:\Users\<YourUsername>\AppData\Local\ItsAlways710\OllamaMonitor\settings.json`
 
 The file is created automatically with default values on first run.
 
@@ -286,7 +286,7 @@ ollamamon config reset
 
 1. Open the settings file in a text editor (Notepad, Visual Studio Code, etc.):
    ```
-   %LOCALAPPDATA%\ElBruno\OllamaMonitor\settings.json
+   %LOCALAPPDATA%\ItsAlways710\OllamaMonitor\settings.json
    ```
 
 2. Edit the JSON values

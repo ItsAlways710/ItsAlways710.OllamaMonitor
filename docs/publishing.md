@@ -1,12 +1,12 @@
-# Publishing ElBruno.OllamaMonitor to NuGet
+# Publishing ItsAlways710.OllamaMonitor to NuGet
 
-This guide covers how the `ElBruno.OllamaMonitor` global tool package is published using **OIDC Trusted Publishing**, following the same release model used in `ElBruno.LocalLLMs`.
+This guide covers how the `ItsAlways710.OllamaMonitor` global tool package is published using **OIDC Trusted Publishing**, following the same release model used in `ElBruno.LocalLLMs`.
 
 ## Package
 
 | Package | Project | NuGet |
 |---------|---------|-------|
-| `ElBruno.OllamaMonitor` | `src/ItsAlways710.OllamaMonitor.Tool/ItsAlways710.OllamaMonitor.Tool.csproj` | [nuget.org/packages/ElBruno.OllamaMonitor](https://www.nuget.org/packages/ElBruno.OllamaMonitor) |
+| `ItsAlways710.OllamaMonitor` | `src/ItsAlways710.OllamaMonitor.Tool/ItsAlways710.OllamaMonitor.Tool.csproj` | [nuget.org/packages/ItsAlways710.OllamaMonitor](https://www.nuget.org/packages/ItsAlways710.OllamaMonitor) |
 
 ---
 
@@ -14,7 +14,7 @@ This guide covers how the `ElBruno.OllamaMonitor` global tool package is publish
 
 ### 1. NuGet.org — Add Trusted Publishing Policy
 
-1. Go to **nuget.org → Manage Packages → ElBruno.OllamaMonitor → Trusted publishers**
+1. Go to **nuget.org → Manage Packages → ItsAlways710.OllamaMonitor → Trusted publishers**
 2. Click **Add trusted publisher** and fill in:
 
    | Field | Value |

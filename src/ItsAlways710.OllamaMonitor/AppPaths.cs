@@ -5,7 +5,7 @@ public static class AppPaths
     public static string RootDirectory =>
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "ElBruno",
+            "ItsAlways710",
             "OllamaMonitor");
 
     public static string SettingsFilePath => Path.Combine(RootDirectory, "settings.json");

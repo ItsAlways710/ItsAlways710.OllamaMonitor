@@ -137,7 +137,7 @@ public enum OllamaMonitorState
 Settings are stored as JSON at:
 
 ```
-%LOCALAPPDATA%\ElBruno\OllamaMonitor\settings.json
+%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\settings.json
 ```
 
 Editable via:
@@ -267,7 +267,7 @@ The project is packaged as a **.NET global tool**:
 Install via:
 
 ```bash
-dotnet tool install --global ElBruno.OllamaMonitor
+dotnet tool install --global ItsAlways710.OllamaMonitor
 ```
 
 This places the executable in the user's PATH and creates the `ollamamon` command.

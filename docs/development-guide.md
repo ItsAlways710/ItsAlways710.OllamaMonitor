@@ -182,7 +182,7 @@ To change icon colors or add menu items, modify these files.
 Logs are written to:
 
 ```
-%LOCALAPPDATA%\ElBruno\OllamaMonitor\logs\
+%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\
 ```
 
 Use `DiagnosticsLogService` to write logs:
@@ -225,7 +225,7 @@ Before submitting a pull request or release:
 
 - [ ] **Build passes:** `dotnet build`
 - [ ] **No warnings:** Check build output
-- [ ] **App launches:** `dotnet run --project src/ElBruno.OllamaMonitor/`
+- [ ] **App launches:** `dotnet run --project src/ItsAlways710.OllamaMonitor/`
 - [ ] **Tray icon appears** and updates every 2 seconds
 - [ ] **Floating window shows** real-time data (click tray icon)
 - [ ] **CLI help works:** `dotnet run ... -- --help`
@@ -306,12 +306,12 @@ This creates a `.nupkg` file in the `bin/Release/` folder.
 (Requires NuGet API key and publishing rights)
 
 ```bash
-dotnet nuget push bin/Release/ElBruno.OllamaMonitor.0.1.0.nupkg --api-key <your-api-key> --source https://api.nuget.org/v3/index.json
+dotnet nuget push bin/Release/ItsAlways710.OllamaMonitor.0.1.0.nupkg --api-key <your-api-key> --source https://api.nuget.org/v3/index.json
 ```
 
 Once published, users can install via:
 ```bash
-dotnet tool install --global ElBruno.OllamaMonitor
+dotnet tool install --global ItsAlways710.OllamaMonitor
 ```
 
 ## Contributing
@@ -341,7 +341,7 @@ Or install Visual Studio with ".NET desktop development" workload.
 ### TrayIcon doesn't appear
 
 Check:
-1. Logs in `%LOCALAPPDATA%\ElBruno\OllamaMonitor\logs\`
+1. Logs in `%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\`
 2. Windows → Settings → Taskbar → Taskbar items → Ensure your app isn't hidden
 3. Try clicking the "Show hidden icons" arrow in the tray
 

@@ -170,7 +170,7 @@ ElBruno.OllamaMonitor Phase 1 is the foundation: a lightweight Windows system tr
 - ✅ **Ollama API Integration** — Version detection, model list, running process info
 - ✅ **Local Configuration** — JSON settings file with sensible defaults
 - ✅ **CLI Commands** — Fully scriptable configuration and help
-- ✅ **Global Tool** — Install once via `dotnet tool install --global ElBruno.OllamaMonitor`
+- ✅ **Global Tool** — Install once via `dotnet tool install --global ItsAlways710.OllamaMonitor`
 
 **CLI Commands:**
 ```bash
@@ -256,20 +256,20 @@ N/A — fresh installation.
 **First Time Installation:**
 
 ```bash
-dotnet tool install --global ElBruno.OllamaMonitor
+dotnet tool install --global ItsAlways710.OllamaMonitor
 ```
 
 **Upgrade from Previous Version:**
 
 ```bash
-dotnet tool update --global ElBruno.OllamaMonitor
+dotnet tool update --global ItsAlways710.OllamaMonitor
 ```
 
 **Downgrade (if needed):**
 
 ```bash
-dotnet tool uninstall --global ElBruno.OllamaMonitor
-dotnet tool install --global ElBruno.OllamaMonitor --version 0.1.0
+dotnet tool uninstall --global ItsAlways710.OllamaMonitor
+dotnet tool install --global ItsAlways710.OllamaMonitor --version 0.1.0
 ```
 
 #### Troubleshooting

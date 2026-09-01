@@ -17,7 +17,7 @@
 2. **Check logs:**
    Open the diagnostics log file at:
    ```
-   %LOCALAPPDATA%\ElBruno\OllamaMonitor\logs\
+   %LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\
    ```
    Look for error messages.
 
@@ -28,8 +28,8 @@
 
 4. **Reinstall the global tool:**
    ```bash
-   dotnet tool uninstall --global ElBruno.OllamaMonitor
-   dotnet tool install --global ElBruno.OllamaMonitor
+   dotnet tool uninstall --global ItsAlways710.OllamaMonitor
+   dotnet tool install --global ItsAlways710.OllamaMonitor
    ```
 
 ### Tray icon doesn't appear
@@ -120,7 +120,7 @@
    - Run `ollamamon` again
 
 4. **Check logs for errors:**
-   Open `%LOCALAPPDATA%\ElBruno\OllamaMonitor\logs\` and look for warnings or errors.
+   Open `%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\` and look for warnings or errors.
 
 ### Floating window doesn't show
 
@@ -194,7 +194,7 @@ This deletes and recreates the settings file with default values.
 
 If you want to manually edit, open:
 ```
-%LOCALAPPDATA%\ElBruno\OllamaMonitor\settings.json
+%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\settings.json
 ```
 
 Verify it's valid JSON. Use a JSON validator at [jsonlint.com](https://www.jsonlint.com) if unsure.
@@ -224,12 +224,12 @@ Verify it's valid JSON. Use a JSON validator at [jsonlint.com](https://www.jsonl
 
 3. **Try from the same directory:**
    ```bash
-   cd %LOCALAPPDATA%\ElBruno\OllamaMonitor
+   cd %LOCALAPPDATA%\ItsAlways710\OllamaMonitor
    ollamamon config
    ```
 
 4. **Check logs:**
-   Open `%LOCALAPPDATA%\ElBruno\OllamaMonitor\logs\` for error details.
+   Open `%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\` for error details.
 
 ### High CPU usage
 
@@ -267,7 +267,7 @@ Verify it's valid JSON. Use a JSON validator at [jsonlint.com](https://www.jsonl
 **Solutions:**
 
 1. **Check logs immediately after crash:**
-   Open `%LOCALAPPDATA%\ElBruno\OllamaMonitor\logs\` and look for the last entries. They should indicate the error.
+   Open `%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\` and look for the last entries. They should indicate the error.
 
 2. **Reduce refresh interval:**
    ```bash
@@ -288,8 +288,8 @@ Verify it's valid JSON. Use a JSON validator at [jsonlint.com](https://www.jsonl
 
 5. **Reinstall:**
    ```bash
-   dotnet tool uninstall --global ElBruno.OllamaMonitor
-   dotnet tool install --global ElBruno.OllamaMonitor
+   dotnet tool uninstall --global ItsAlways710.OllamaMonitor
+   dotnet tool install --global ItsAlways710.OllamaMonitor
    ```
 
 ### "Request timeout" or "Connection refused" errors
@@ -332,7 +332,7 @@ dotnet --version
 
 Then try installing again:
 ```bash
-dotnet tool install --global ElBruno.OllamaMonitor
+dotnet tool install --global ItsAlways710.OllamaMonitor
 ```
 
 If still failing, check your NuGet configuration:
@@ -344,7 +344,7 @@ dotnet nuget list source
 
 ## Getting Help
 
-1. **Check the logs:** `%LOCALAPPDATA%\ElBruno\OllamaMonitor\logs\`
+1. **Check the logs:** `%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\`
 2. **Read the Configuration Guide:** [Configuration](configuration.md)
 3. **Review the Architecture:** [Architecture Guide](architecture.md)
 4. **Open an issue on GitHub** with logs and steps to reproduce

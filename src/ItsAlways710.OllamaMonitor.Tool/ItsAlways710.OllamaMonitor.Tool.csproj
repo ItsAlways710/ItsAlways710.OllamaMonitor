@@ -8,7 +8,7 @@
     <AssemblyName>ItsAlways710.OllamaMonitor.Tool</AssemblyName>
     <RootNamespace>ItsAlways710.OllamaMonitor</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <PackageId>ElBruno.OllamaMonitor</PackageId>
+    <PackageId>ItsAlways710.OllamaMonitor</PackageId>
     <Title>ItsAlways710.OllamaMonitor</Title>
     <AssemblyTitle>ItsAlways710.OllamaMonitor</AssemblyTitle>
     <Product>ItsAlways710.OllamaMonitor</Product>
