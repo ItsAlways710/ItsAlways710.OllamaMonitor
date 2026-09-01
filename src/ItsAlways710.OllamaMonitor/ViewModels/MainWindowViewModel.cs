@@ -509,6 +509,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         DiskWriteText = $"Disk Write: {StatusTextHelper.FormatBytesPerSecond(snapshot.Resources?.DiskWriteBytesPerSecond)}";
         CpuText = StatusTextHelper.BuildCpuLine(snapshot.Resources?.CpuPercent, snapshot.Resources?.SystemCpuPercent);
         MemoryText = StatusTextHelper.BuildMemoryLine(snapshot.Resources?.MemoryBytes, snapshot.Resources?.SystemMemoryPercent);
+        GpuText = $"GPU: {(snapshot.Resources is null ? "Unavailable" : StatusTextHelper.BuildGpuSummary(snapshot.Resources))}";
+        CompactGpuText = $"GPU: {StatusTextHelper.BuildCompactGpuSummary(snapshot.Resources)}";
         GpuMemoryText = $"VRAM: {StatusTextHelper.FormatBytes(snapshot.Resources?.VramUsedBytes)} / {StatusTextHelper.FormatBytes(snapshot.Resources?.VramTotalBytes)}";
         ContextText = $"Context: {StatusTextHelper.BuildContextSummary(snapshot.ContextWindows)}";
         MiniContextLines = StatusTextHelper.BuildMiniModelContextLines(snapshot.ContextWindows);
