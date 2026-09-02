@@ -179,13 +179,20 @@ Returns:
 
 ### ProcessMetricsService
 
-Polls the Ollama process for CPU and memory usage using `System.Diagnostics.Process`.
+Polls Ollama's processes for CPU and memory usage using `System.Diagnostics.Process`.
+
+Process selection: one `llama-server.exe` runs per loaded model, and that is where inference
+CPU/RAM actually live, so when one or more are running their CPU%, memory, and disk I/O are
+**summed** across all of them (aggregate CPU% may exceed 100 on multi-core machines). The
+displayed process label stays `ollama`. When none are running (no models loaded), it falls
+back to the `ollama.exe` wrapper process(es), picking the longest-running one (warning on
+multiples) so the idle state still reports something.
 
 ```csharp
-Task<ResourceSnapshot?> GetMetricsAsync(CancellationToken cancellationToken)
+Task<ProcessMetricsResult> GetMetricsAsync(bool enableDiskMetrics, CancellationToken cancellationToken)
 ```
 
-Returns CPU%, RAM (MB), disk I/O if available.
+Returns CPU%, RAM (bytes), private memory, and disk I/O if enabled.
 
 ### NvidiaSmiMetricsService
 

@@ -20,9 +20,21 @@ public sealed class ProcessMetricsService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var processes = Process.GetProcessesByName("ollama")
-            .OrderBy(process => SafeGetStartTime(process) ?? DateTime.MaxValue)
-            .ToArray();
+        // Prefer the real inference processes: Ollama spawns one
+        // llama-server.exe per loaded model, and that is where the CPU/RAM
+        // cost of inference (including CPU offload when a model spills out
+        // of VRAM) actually lives. Summing all of them gives the true total
+        // cost of active inference. When none are running, fall back to the
+        // idle-state wrapper process(es).
+        var runners = SnapshotProcesses("llama-server");
+        if (runners.Length > 0)
+        {
+            // The displayed label stays "ollama" even though the numbers are
+            // sourced from llama-server: this is a source change, not a rename.
+            return Task.FromResult(BuildMetrics(runners, enableDiskMetrics, displayProcessName: "ollama"));
+        }
+
+        var processes = SnapshotProcesses("ollama");
 
         if (processes.Length == 0)
         {
@@ -34,23 +46,62 @@ public sealed class ProcessMetricsService
             _diagnostics.WriteWarning($"Multiple Ollama processes found. Using PID {processes[0].Id}.");
         }
 
-        var process = processes[0];
-        process.Refresh();
+        return Task.FromResult(BuildMetrics(new[] { processes[0] }, enableDiskMetrics, displayProcessName: processes[0].ProcessName));
+    }
 
-        var cpuPercent = GetCpuUsage(process);
-        var startedAt = SafeGetStartTime(process);
-        var diskMetrics = enableDiskMetrics ? GetDiskMetrics(process) : (ReadBytesPerSecond: (long?)null, WriteBytesPerSecond: (long?)null);
+    private static Process[] SnapshotProcesses(string processName) =>
+        Process.GetProcessesByName(processName)
+            .OrderBy(process => SafeGetStartTime(process) ?? DateTime.MaxValue)
+            .ToArray();
 
-        return Task.FromResult(new ProcessMetricsResult(
+    private ProcessMetricsResult BuildMetrics(Process[] processes, bool enableDiskMetrics, string displayProcessName)
+    {
+        double? cpuPercent = null;
+        long workingSetBytes = 0;
+        long privateMemoryBytes = 0;
+        long? readPerSecond = null;
+        long? writePerSecond = null;
+
+        foreach (var process in processes)
+        {
+            try
+            {
+                cpuPercent = Sum(cpuPercent, GetCpuUsage(process));
+                process.Refresh();
+                workingSetBytes += process.WorkingSet64;
+                privateMemoryBytes += process.PrivateMemorySize64;
+                if (enableDiskMetrics)
+                {
+                    var disk = GetDiskMetrics(process);
+                    readPerSecond = Sum(readPerSecond, disk.ReadBytesPerSecond);
+                    writePerSecond = Sum(writePerSecond, disk.WriteBytesPerSecond);
+                }
+            }
+            catch
+            {
+                // A process can exit between enumeration and sampling; skip
+                // its contribution instead of failing the whole batch.
+            }
+        }
+
+        // The snapshot is ordered oldest-start first, so index 0 is the
+        // longest-running one (its start time is the aggregate's).
+        var startedAt = SafeGetStartTime(processes[0]);
+
+        return new ProcessMetricsResult(
             true,
             cpuPercent,
-            process.WorkingSet64,
-            process.PrivateMemorySize64,
-            diskMetrics.ReadBytesPerSecond,
-            diskMetrics.WriteBytesPerSecond,
+            workingSetBytes,
+            privateMemoryBytes,
+            readPerSecond,
+            writePerSecond,
             startedAt is null ? null : new DateTimeOffset(startedAt.Value),
-            process.ProcessName));
+            displayProcessName);
     }
+
+    private static double? Sum(double? acc, double? value) => value is null ? acc : (acc ?? 0) + value.Value;
+
+    private static long? Sum(long? acc, long? value) => value is null ? acc : (acc ?? 0) + value.Value;
 
     private double? GetCpuUsage(Process process)
     {
