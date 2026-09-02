@@ -1,4 +1,7 @@
 using System.Drawing;
+using System.Collections;
+using System.Resources;
+using System.Reflection;
 using System.Windows.Forms;
 using ItsAlways710.OllamaMonitor.Configuration;
 using ItsAlways710.OllamaMonitor.Diagnostics;
@@ -156,29 +159,98 @@ public sealed class TrayIconService : IDisposable
 
     private static IReadOnlyDictionary<OllamaMonitorState, Icon> LoadTrayIcons(DiagnosticsLogService diagnostics)
     {
+        var assembly = typeof(TrayIconService).Assembly;
         var iconDirectory = Path.Combine(AppContext.BaseDirectory, "Assets", "TrayIcons");
 
         return new Dictionary<OllamaMonitorState, Icon>
         {
-            [OllamaMonitorState.NotReachable] = LoadTrayIcon(iconDirectory, "tray-gray.ico", SystemIcons.Error, diagnostics),
-            [OllamaMonitorState.Running] = LoadTrayIcon(iconDirectory, "tray-green.ico", SystemIcons.Information, diagnostics),
-            [OllamaMonitorState.ModelLoaded] = LoadTrayIcon(iconDirectory, "tray-blue.ico", SystemIcons.Shield, diagnostics),
-            [OllamaMonitorState.HighUsage] = LoadTrayIcon(iconDirectory, "tray-orange.ico", SystemIcons.Warning, diagnostics),
-            [OllamaMonitorState.Error] = LoadTrayIcon(iconDirectory, "tray-red.ico", SystemIcons.Error, diagnostics)
+            [OllamaMonitorState.NotReachable] = LoadTrayIcon(assembly, iconDirectory, "tray-gray.ico", SystemIcons.Error, diagnostics),
+            [OllamaMonitorState.Running] = LoadTrayIcon(assembly, iconDirectory, "tray-green.ico", SystemIcons.Information, diagnostics),
+            [OllamaMonitorState.ModelLoaded] = LoadTrayIcon(assembly, iconDirectory, "tray-blue.ico", SystemIcons.Shield, diagnostics),
+            [OllamaMonitorState.HighUsage] = LoadTrayIcon(assembly, iconDirectory, "tray-orange.ico", SystemIcons.Warning, diagnostics),
+            [OllamaMonitorState.Error] = LoadTrayIcon(assembly, iconDirectory, "tray-red.ico", SystemIcons.Error, diagnostics)
         };
     }
 
-    private static Icon LoadTrayIcon(string iconDirectory, string fileName, Icon fallback, DiagnosticsLogService diagnostics)
+    private static Icon LoadTrayIcon(Assembly assembly, string iconDirectory, string fileName, Icon fallback, DiagnosticsLogService diagnostics)
     {
-        var iconPath = Path.Combine(iconDirectory, fileName);
-
-        if (!File.Exists(iconPath))
+        // Prefer the embedded copy: this is the only copy that survives a
+        // single-file publish, where WPF's content-file fallback crashes.
+        var embedded = LoadEmbeddedIcon(assembly, fileName);
+        if (embedded is not null)
         {
-            diagnostics.WriteInfo($"Tray icon asset not found. Using fallback icon for {fileName}.");
-            return (Icon)fallback.Clone();
+            return embedded;
         }
 
-        using var stream = File.OpenRead(iconPath);
-        return new Icon(stream);
+        // Legacy sidecar file next to the executable.
+        var iconPath = Path.Combine(iconDirectory, fileName);
+        if (File.Exists(iconPath))
+        {
+            using var stream = File.OpenRead(iconPath);
+            return new Icon(stream);
+        }
+
+        diagnostics.WriteInfo($"Tray icon asset not found. Using fallback icon for {fileName}.");
+        return (Icon)fallback.Clone();
+    }
+
+    private static Icon? LoadEmbeddedIcon(Assembly assembly, string fileName)
+    {
+        // WPF bakes <Resource> items as named entries inside the assembly's
+        // .resources blob (e.g. "assets/trayicons/tray-green.ico"). Locate
+        // the entry by key so the lookup does not depend on blob naming.
+        try
+        {
+            foreach (var resourceName in assembly.GetManifestResourceNames())
+            {
+                using var blob = assembly.GetManifestResourceStream(resourceName);
+                if (blob is null)
+                {
+                    continue;
+                }
+
+                using var reader = new ResourceReader(blob);
+                foreach (DictionaryEntry entry in (IEnumerable)reader)
+                {
+                    var key = entry.Key as string ?? string.Empty;
+                    if (!string.Equals(key, "assets/trayicons/" + fileName, StringComparison.OrdinalIgnoreCase)
+                        && !key.EndsWith("/" + fileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (CreateIcon(entry.Value) is { } embedded)
+                    {
+                        return embedded;
+                    }
+
+                    break;
+                }
+            }
+        }
+        catch
+        {
+            // Let the caller fall through to the other sources.
+        }
+
+        return null;
+    }
+
+    private static Icon? CreateIcon(object? value)
+    {
+        if (value is Stream data)
+        {
+            using var buffer = new MemoryStream();
+            data.CopyTo(buffer);
+            buffer.Position = 0;
+            return new Icon(buffer);
+        }
+
+        if (value is byte[] bytes)
+        {
+            return new Icon(new MemoryStream(bytes, writable: false));
+        }
+
+        return null;
     }
 }

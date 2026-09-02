@@ -22,9 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\TrayIcons\*.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Assets\TrayIcons\*.ico" />
   </ItemGroup>
 
   <ItemGroup>
