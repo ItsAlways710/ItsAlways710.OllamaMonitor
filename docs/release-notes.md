@@ -2,6 +2,26 @@
 
 ## Version History
 
+### 0.12.0 — Verbose/Debug Logging Toggle
+
+**Release Date:** 2026-09-02
+
+This release adds a general-purpose "Enable verbose (debug) logging" setting (off by default) that gates diagnostic-level logging throughout the app, and reclassifies the Mini Monitor topmost guard's forensic capture from always-on to verbose-only.
+
+#### What's New
+
+- ✅ **Enable verbose (debug) logging** (Settings → General; JSON key `enableVerboseLogging`; off by default) — when on, the app writes detailed `[VERBOSE]` lines to the log
+- ✅ Reusable gate: `DiagnosticsLogService.IsVerboseEnabled` + `WriteVerbose(...)` — a complete no-op (no file I/O) when off; future diagnostic logging reuses the same setting with no extra plumbing
+- ✅ Toggle applies live on the next refresh cycle (no restart), matching the other settings
+
+#### Notes
+
+- Always-on lines are unchanged: INFO/WARN/ERROR behave exactly as before, and the topmost guard still records each `demotion blocked` / `re-asserted` / `topmost OK` event with its exstyle/flags
+- The guard's forensic detail (demoting actor's window pid/process/class/title, sender thread, foreground window) now appears only as `(forensics)` lines when verbose logging is on
+- Existing `settings.json` files are unaffected: the missing key resolves to `false`
+
+---
+
 ### 0.11.1 — Details Window Scrollbar Layout Fix
 
 **Release Date:** 2026-08-31

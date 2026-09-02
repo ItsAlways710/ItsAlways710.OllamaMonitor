@@ -276,6 +276,20 @@
                                   FontSize="12"
                                   Cursor="Hand" />
 
+                        <CheckBox x:Name="EnableVerboseLoggingCheckBox"
+                                  Content="Enable verbose (debug) logging"
+                                  IsChecked="{Binding EnableVerboseLogging}"
+                                  Foreground="{DynamicResource ThemeForegroundBrush}"
+                                  Margin="0,10,0,6"
+                                  FontSize="12"
+                                  ToolTip="Adds detailed diagnostic lines (VERBOSE level) to the app log, e.g. the Mini Monitor topmost-guard forensic capture. Off by default."
+                                  Cursor="Hand" />
+                        <TextBlock Text="Writes extra [VERBOSE] detail to the app log while you investigate (e.g. which process is demoting the Mini Monitor). Applies live - no restart needed."
+                                   Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
+                                   FontSize="11"
+                                   Margin="0,0,0,15"
+                                   TextWrapping="Wrap" />
+
                         <TextBlock Text="Unload Strategy"
                                    Foreground="{DynamicResource ThemeSecondaryForegroundBrush}"
                                    FontSize="12"

@@ -42,6 +42,34 @@ public sealed class AppSettingsTests
     }
 
     [Fact]
+    public void Defaults_EnableVerboseLogging_IsFalse()
+    {
+        var settings = new AppSettings();
+        Assert.False(settings.EnableVerboseLogging);
+    }
+
+    [Fact]
+    public void Deserialization_ExplicitVerboseKey_HonorsValue()
+    {
+        // Pins the human-editable key name documented in configuration.md.
+        const string json = """
+            {
+              "endpoint": "http://localhost:11434",
+              "enableVerboseLogging": true
+            }
+            """;
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var settings = JsonSerializer.Deserialize<AppSettings>(json, options)!;
+
+        Assert.True(settings.EnableVerboseLogging);
+    }
+
+    [Fact]
     public void Defaults_MiniMonitorPosition_IsNull()
     {
         var settings = new AppSettings();
@@ -118,5 +146,6 @@ public sealed class AppSettingsTests
         Assert.False(settings.ShowCpuInMiniMonitor);
         Assert.False(settings.ShowMemoryInMiniMonitor);
         Assert.False(settings.ShowOllamaLogsInMiniMonitor);
+        Assert.False(settings.EnableVerboseLogging);
     }
 }

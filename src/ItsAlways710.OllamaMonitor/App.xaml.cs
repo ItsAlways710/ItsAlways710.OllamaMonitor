@@ -73,6 +73,7 @@ public partial class App : System.Windows.Application
     private async Task LaunchTrayApplicationAsync(AppSettingsService settingsService, DiagnosticsLogService diagnostics, CancellationToken cancellationToken)
     {
         var settings = await settingsService.LoadAsync(cancellationToken);
+        diagnostics.IsVerboseEnabled = settings.EnableVerboseLogging;
         _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(5)

@@ -13,6 +13,10 @@ public sealed record AppSettings
     public double HighCpuThresholdPercent { get; init; } = 80;
     public double HighMemoryThresholdGb { get; init; } = 16;
     public double HighGpuThresholdPercent { get; init; } = 85;
+
+    // Diagnostics (off by default, live-applied): gates detailed [VERBOSE] log
+    // entries, e.g. the Mini Monitor topmost-guard forensic capture.
+    public bool EnableVerboseLogging { get; init; } = false;
     
     // Mini Monitor display toggles
     public bool ShowCpuInMiniMonitor { get; init; } = false;

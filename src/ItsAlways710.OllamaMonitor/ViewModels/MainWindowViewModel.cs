@@ -368,6 +368,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         try
         {
             var settings = await _settingsService.LoadAsync(cancellationToken);
+            _diagnostics.IsVerboseEnabled = settings.EnableVerboseLogging;
             _notificationService.SetDebounceSeconds(settings.NotificationDebounceSeconds);
             ShowCpuInMiniMonitor = settings.ShowCpuInMiniMonitor;
             ShowMemoryInMiniMonitor = settings.ShowMemoryInMiniMonitor;

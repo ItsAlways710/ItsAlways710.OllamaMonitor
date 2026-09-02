@@ -193,6 +193,19 @@ _diagnostics.WriteError("An error occurred", exception);
 _diagnostics.WriteWarning("A warning");
 ```
 
+Diagnostic-level logging is gated behind the `enableVerboseLogging` setting (off by
+default; the app applies it to `DiagnosticsLogService.IsVerboseEnabled` at startup
+and on every refresh tick, so the Settings toggle works live):
+
+```csharp
+_diagnostics.WriteVerbose("detailed state useful only while investigating");
+```
+
+- `WriteVerbose` is a complete no-op (no file I/O) while the flag is off
+- When the detail requires expensive capture (process lookups, foreign window identity),
+  check `IsVerboseEnabled` **before** the capture so the work itself is skipped -
+  see `MiniMonitorWindow.LogTopmostEvent`
+
 To view logs, open the logs directory with Windows Explorer or your editor.
 
 ## Debugging
@@ -253,7 +266,11 @@ Current automated coverage includes:
 
 ### Increase Logging Detail
 
-Edit `Services/DiagnosticsLogService.cs` or `App.xaml.cs` to write more info logs during startup.
+Diagnostic-only detail: use `_diagnostics.WriteVerbose(...)` - it is gated on the
+`enableVerboseLogging` setting (off by default) and the Settings toggle applies live.
+
+Always-on logs: add `WriteInfo`/`WriteWarning` calls where the event itself is always
+worth recording (e.g. during startup in `App.xaml.cs`).
 
 ### Test with Offline Ollama
 

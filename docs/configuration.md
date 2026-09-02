@@ -29,6 +29,7 @@ The file is created automatically with default values on first run.
   "highCpuThresholdPercent": 80,
   "highMemoryThresholdGb": 16,
   "highGpuThresholdPercent": 85,
+  "enableVerboseLogging": false,
   "enableNotifications": true,
   "notificationEvents": 271,
   "notificationDebounceSeconds": 30,
@@ -181,6 +182,23 @@ When GPU utilization exceeds this threshold, the tray icon turns orange.
 "highGpuThresholdPercent": 85   // Moderate (default)
 "highGpuThresholdPercent": 99   // Conservative
 ```
+
+### `enableVerboseLogging`
+
+**Type:** `bool`  
+**Default:** `false`
+
+Enables detailed diagnostic-level logging in the app log (lines tagged `[VERBOSE]`).
+
+Settings window: **Settings → General → "Enable verbose (debug) logging"**.
+
+- **Off (default):** only the regular INFO/WARN/ERROR lines are written
+- **On:** diagnostic captures are logged too - for example, the Mini Monitor topmost guard records the demoting actor's identity (reference window pid/process/class/title, sender thread, foreground window) as a `(forensics)` line beside each event
+- Useful while actively investigating an issue; turn off again afterwards to keep the log low-noise
+
+Log location: `%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\`
+
+Changes apply live on the next refresh cycle (no restart needed).
 
 ### `enableNotifications`
 

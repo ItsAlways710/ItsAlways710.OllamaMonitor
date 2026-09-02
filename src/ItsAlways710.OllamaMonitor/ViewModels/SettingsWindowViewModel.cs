@@ -29,6 +29,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
     private bool _showMemoryInMiniMonitor;
     private bool _showContextInMiniMonitor;
     private bool _showOllamaLogsInMiniMonitor;
+    private bool _enableVerboseLogging;
 
     public SettingsWindowViewModel(AppSettings settings, AppSettingsService settingsService, AutoLaunchService autoLaunchService)
     {
@@ -147,6 +148,12 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         set => SetProperty(ref _showOllamaLogsInMiniMonitor, value);
     }
 
+    public bool EnableVerboseLogging
+    {
+        get => _enableVerboseLogging;
+        set => SetProperty(ref _enableVerboseLogging, value);
+    }
+
     public IReadOnlyList<ModelUnloadStrategy> UnloadStrategies { get; } = Enum.GetValues<ModelUnloadStrategy>();
 
     public ModelUnloadStrategy SelectedUnloadStrategy
@@ -169,7 +176,8 @@ public sealed class SettingsWindowViewModel : ViewModelBase
             ShowCpuInMiniMonitor = ShowCpuInMiniMonitor,
             ShowMemoryInMiniMonitor = ShowMemoryInMiniMonitor,
             ShowContextInMiniMonitor = ShowContextInMiniMonitor,
-            ShowOllamaLogsInMiniMonitor = ShowOllamaLogsInMiniMonitor
+            ShowOllamaLogsInMiniMonitor = ShowOllamaLogsInMiniMonitor,
+            EnableVerboseLogging = EnableVerboseLogging
         };
         await _settingsService.SaveAsync(updatedSettings, cancellationToken);
 
@@ -205,6 +213,7 @@ public sealed class SettingsWindowViewModel : ViewModelBase
         ShowMemoryInMiniMonitor = _settings.ShowMemoryInMiniMonitor;
         ShowContextInMiniMonitor = _settings.ShowContextInMiniMonitor;
         ShowOllamaLogsInMiniMonitor = _settings.ShowOllamaLogsInMiniMonitor;
+        EnableVerboseLogging = _settings.EnableVerboseLogging;
     }
 
     private NotificationEventType BuildNotificationFlags()

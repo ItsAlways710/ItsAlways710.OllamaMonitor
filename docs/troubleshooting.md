@@ -355,7 +355,12 @@ dotnet nuget list source
 
 ### Enable verbose logging
 
-Edit the app code to add more `WriteInfo()` calls in `DiagnosticsLogService`.
+Turn on **Settings → General → "Enable verbose (debug) logging"** (or set
+`"enableVerboseLogging": true` in `settings.json`; applies live, no restart). This
+adds detailed `[VERBOSE]` lines - e.g. the Mini Monitor topmost guard recording
+which process/actor demoted a window - that are suppressed by default.
+
+Log location: `%LOCALAPPDATA%\ItsAlways710\OllamaMonitor\logs\`
 
 ### Manually test the Ollama API
 

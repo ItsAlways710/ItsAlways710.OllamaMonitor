@@ -175,8 +175,14 @@ public partial class MiniMonitorWindow : Window
         {
             _diagnostics?.WriteWarning(
                 $"MiniMonitor topmost re-asserted [trigger={trigger}]: WS_EX_TOPMOST was missing; " +
-                $"GWL_EXSTYLE=0x{exstyle:X}; foreground={WindowInterop.DescribeForegroundWindow()}; " +
-                $"msSinceLastSizeChange={MsSinceLastSizeChange()}");
+                $"GWL_EXSTYLE=0x{exstyle:X}");
+
+            if (_diagnostics is { IsVerboseEnabled: true })
+            {
+                _diagnostics.WriteVerbose(
+                    $"MiniMonitor topmost re-asserted (forensics) [trigger={trigger}]: " +
+                    $"foreground={WindowInterop.DescribeForegroundWindow()}; msSinceLastSizeChange={MsSinceLastSizeChange()}");
+            }
             WindowInterop.RestoreTopmost(hwnd);
             return;
         }
@@ -188,28 +194,43 @@ public partial class MiniMonitorWindow : Window
 
         _diagnostics?.WriteInfo(
             $"MiniMonitor topmost OK [trigger=shown]: WS_EX_TOPMOST present; " +
-            $"GWL_EXSTYLE=0x{exstyle:X}; foreground={WindowInterop.DescribeForegroundWindow()}");
+            $"GWL_EXSTYLE=0x{exstyle:X}");
+
+        if (_diagnostics is { IsVerboseEnabled: true })
+        {
+            _diagnostics.WriteVerbose(
+                $"MiniMonitor topmost OK (forensics) [trigger=shown]: " +
+                $"foreground={WindowInterop.DescribeForegroundWindow()}");
+        }
     }
 
     private void LogTopmostEvent(string trigger, int exstyle, long insertAfter, uint flags)
     {
         string topmostState = (exstyle & WindowInterop.WsExTopmost) != 0 ? "present" : "missing";
 
-        // Name the demotion's actor in the log itself, while the reference handle is
-        // still guaranteed valid: its owner (pid/process/class/title) and whether the
-        // sending thread is one of ours.
-        RefWindowIdentity refWindow = RefWindowForensics.Capture(new IntPtr(insertAfter));
-        uint senderThreadId = RefWindowForensics.GetCurrentThreadId();
-
         _diagnostics?.WriteWarning(
             $"MiniMonitor topmost demotion blocked [trigger={trigger}]: " +
             $"WS_EX_TOPMOST={topmostState}; " +
             $"GWL_EXSTYLE=0x{exstyle:X}; " +
             $"WindowPOS.hwndInsertAfter=0x{insertAfter:X}; " +
-            $"refWin={RefWindowForensics.Format(refWindow)}; " +
-            $"flags=0x{flags:X8}; " +
-            $"senderTid=0x{senderThreadId:X}; senderIsOwnProcess={RefWindowForensics.IsOwnProcessThread(senderThreadId)}; " +
-            $"foreground={WindowInterop.DescribeForegroundWindow()}; msSinceLastSizeChange={MsSinceLastSizeChange()}");
+            $"flags=0x{flags:X8}");
+
+        // Name the demotion's actor in the log itself (reference-window owner pid/
+        // process/class/title, sending thread, foreground window) - but only when
+        // verbose logging is on: the capture opens foreign processes, and the
+        // reference handle is guaranteed valid only in this hook, so the capture and
+        // the write share one gate.
+        if (_diagnostics is { IsVerboseEnabled: true })
+        {
+            RefWindowIdentity refWindow = RefWindowForensics.Capture(new IntPtr(insertAfter));
+            uint senderThreadId = RefWindowForensics.GetCurrentThreadId();
+
+            _diagnostics.WriteVerbose(
+                $"MiniMonitor topmost demotion blocked (forensics) [trigger={trigger}]: " +
+                $"refWin={RefWindowForensics.Format(refWindow)}; " +
+                $"senderTid=0x{senderThreadId:X}; senderIsOwnProcess={RefWindowForensics.IsOwnProcessThread(senderThreadId)}; " +
+                $"foreground={WindowInterop.DescribeForegroundWindow()}; msSinceLastSizeChange={MsSinceLastSizeChange()}");
+        }
     }
 
     private int MsSinceLastSizeChange() =>
