@@ -1,11 +1,3 @@
-# Squad: ignore runtime state (logs, inbox, sessions)
-.squad/orchestration-log/
-.squad/log/
-.squad/decisions/inbox/
-.squad/sessions/
-# Squad: SubSquad activation file (local to this machine)
-.squad-workstream
-
 # .NET build outputs
 artifacts/
 bin/
@@ -20,5 +12,8 @@ obj/
 *.lscache
 
 # Local NuGet publishing secret
-nuget elbruno.ollamamonitor.txt
 commit_msg.tmp
+
+# Local publish/release artifacts
+/ItsAlways710.OllamaMonitor-*.zip
+/ItsAlways710.OllamaMonitor/
