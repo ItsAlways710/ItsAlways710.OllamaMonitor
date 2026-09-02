@@ -1,6 +1,8 @@
 # ItsAlways710.OllamaMonitor
 
-A fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by [Bruno Capuano](https://github.com/elbruno), maintained by [ItsAlways710](https://github.com/ItsAlways710).
+A Windows system tray monitor for your local Ollama runtime — status, loaded models, live context tracking, and the real resource cost of inference, right out of the tray.
+
+It started as a fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by [Bruno Capuano](https://github.com/elbruno) and has grown into its own project on that foundation.
 
 [![NuGet](https://img.shields.io/nuget/v/ItsAlways710.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ItsAlways710.OllamaMonitor)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/ItsAlways710.OllamaMonitor.svg?style=flat-square&logo=nuget)](https://www.nuget.org/packages/ItsAlways710.OllamaMonitor)
@@ -14,15 +16,12 @@ A tiny Windows system tray tool to monitor your local Ollama runtime.
 
 ## What's New
 
-- Added optional Mini Monitor display controls: **Show CPU**, **Show Memory**, and **Show Ollama logs** — disabled by default, configure from Settings
-- Collapsible logs panel in Mini Monitor shows the last 5 lines of Ollama server output in real-time
-- All mini-monitor toggles apply live (no restart needed)
-- Added full model lifecycle controls in the monitor UI: **Stop selected**, **Stop all**, **Pull**, **Remove**, **Copy**
-- Added **Start Ollama** action from the main window
-- Upgraded unload logic with strategy support: **Auto / Cli / Api**
-- `Auto` strategy now prefers `ollama stop` for local endpoints and API fallback for remote endpoints
-- Added verification after stop requests to confirm models are no longer running
-- Added automated tests for unload strategy behavior and new settings defaults
+- **Detailed logging toggle (off by default)** — a verbose-level log gate (incl. topmost-guard forensics) via Settings (0.12.0)
+- **Live context-window tracking** — optional "Context" line in the mini monitor (off by default): per-task tokens used, slot size, tokens/second, with runner-to-model attribution parsed from the Ollama server log (0.11.0)
+- **Launch at Windows Startup** — optional sign-in autostart toggle (off by default) (0.11.0)
+- **System-wide CPU and Memory** — "(System)" figures alongside the Ollama process metrics (0.11.0)
+- **Optional Mini Monitor display controls** — CPU, memory, and log panel toggles, applied live (0.10.0)
+- **Model lifecycle controls** — Stop selected/all, Pull, Remove, Copy, plus Start Ollama and **Auto / Cli / Api** unload strategy
 
 ## What It Does
 
@@ -98,17 +97,20 @@ Click the icon to open the full details window for diagnostics, or open the mini
 
 - ✅ **System Tray Integration** — Runs in the background, always visible
 - ✅ **Visual Status Indicators** — Color-coded icons for quick status checks
-- ✅ **Standard Details Window** — A normal Windows window with minimize/close behavior that keeps the app in the tray when closed
+- ✅ **Standard Details Window** — A normal Windows window that keeps the app in the tray when closed
 - ✅ **Mini Monitor Window** — A semi-transparent always-on-top compact view for CPU, RAM, GPU, and model status
-- ✅ **Local Configuration** — Customize endpoint, refresh rate, thresholds
-- ✅ **CLI Commands** — Fully scriptable configuration
+- ✅ **Live Context Tracking** — Optional per-task context usage line (tokens, slot size, tokens/second, model attribution)
+- ✅ **System-wide Metrics** — Machine CPU/memory alongside the Ollama process metrics
+- ✅ **Settings Window** — Notifications, general behavior, and mini monitor display, applied live
+- ✅ **Windows Notifications** — Toast alerts for status changes and model events
+- ✅ **Themed UI** — Dark, light, or system theme
+- ✅ **Local Configuration** — Endpoint, refresh rate, thresholds, via `settings.json`
+- ✅ **CLI Commands** — Scriptable configuration and status
 - ✅ **GPU Metrics** — Best-effort NVIDIA GPU tracking (if nvidia-smi is available)
-- ✅ **Copy to Clipboard** — Quickly share diagnostics
-- ✅ **Manual Refresh** — Force an immediate check
-- ✅ **Open Ollama URL** — Quick link to the Ollama API
 - ✅ **Model Management** — Stop selected/all models, pull/remove/copy models
-- ✅ **CLI-Based Stop Strategy** — Uses `ollama stop` for local endpoints with API fallback support
+- ✅ **CLI-Based Stop Strategy** — `ollama stop` for local endpoints with API fallback for remote
 - ✅ **Start Ollama** — Trigger `ollama serve` from the UI for local setups
+- ✅ **Copy to Clipboard, Manual Refresh, Open Ollama URL**
 
 ## Requirements
 
@@ -140,26 +142,20 @@ If you'd like to share this project:
 - **[Twitter Post](docs/promotional/twitter-post.md)** — X-ready snippets
 - **[Image Prompts](docs/promotional/image-prompts.md)** — AI image generation prompts
 
-## License
-
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
-
 ## Support
 
 Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor/issues).
 
 Questions about Ollama? Check the [Ollama documentation](https://github.com/ollama/ollama).
 
-## About the Original Project
+## License
 
-**Made with ❤️ by [Bruno Capuano (ElBruno)](https://github.com/elbruno)**
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+
+This project started as a fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by [Bruno Capuano](https://github.com/elbruno) — thanks to him for the foundation.
 
 - 📝 **Blog**: [elbruno.com](https://elbruno.com)
 - 📺 **YouTube**: [youtube.com/elbruno](https://youtube.com/elbruno)
 - 🔗 **LinkedIn**: [linkedin.com/in/elbruno](https://linkedin.com/in/elbruno)
 - 𝕏 **Twitter**: [twitter.com/elbruno](https://twitter.com/elbruno)
 - 🎙️ **Podcast**: [notienenombre.com](https://notienenombre.com)
-
-## About This Fork
-
-Forked and maintained by [ItsAlways710](https://github.com/ItsAlways710) — [github.com/ItsAlways710/ItsAlways710.OllamaMonitor](https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor).

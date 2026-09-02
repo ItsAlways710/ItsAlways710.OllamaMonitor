@@ -136,14 +136,13 @@
    - Right-click the tray icon
    - Click "Show" or similar option (if available)
 
-3. **Check if it's disabled in settings:**
+3. **Check the startup setting:**
    ```bash
    ollamamon config
    ```
-   Look for `showFloatingWindowOnStart`. Try:
-   ```bash
-   ollamamon config set show-floating-window true
-   ```
+   Look for `showFloatingWindowOnStart` (toggle: Settings → General → "Show floating mini monitor on start").
+   Set it to `true` in `settings.json` — the app picks it up on the next refresh cycle.
+   You can also open the windows at any time from the tray context menu.
 
 4. **Check logs for rendering errors:**
    Open the logs directory and look for WPF-related errors.
@@ -158,10 +157,8 @@
    ```bash
    ollamamon config
    ```
-   Look for `enableGpuMetrics`. If it's `false`, enable it:
-   ```bash
-   ollamamon config set enable-gpu-metrics true
-   ```
+   Look for `enableGpuMetrics`. If it's `false`, set it to `true` in `settings.json`
+   (this key is only editable in the file — not via `config set`).
 
 2. **Check if nvidia-smi is installed:**
    ```bash
@@ -244,15 +241,11 @@ Verify it's valid JSON. Use a JSON validator at [jsonlint.com](https://www.jsonl
    Higher interval = less frequent polling = lower CPU.
 
 2. **Disable GPU metrics:**
-   ```bash
-   ollamamon config set enable-gpu-metrics false
-   ```
+   Set `enableGpuMetrics` to `false` in `settings.json`.
    GPU polling can be expensive; try disabling it temporarily.
 
 3. **Disable disk metrics:**
-   ```bash
-   ollamamon config set enable-disk-metrics false
-   ```
+   Set `enableDiskMetrics` to `false` in `settings.json`.
 
 4. **Check if Ollama process itself is using CPU:**
    Open Task Manager and look at the `ollama` process. If it's using high CPU, it's not an issue with this app.
@@ -276,10 +269,8 @@ Verify it's valid JSON. Use a JSON validator at [jsonlint.com](https://www.jsonl
    If a bug only triggers during fast polling, reducing frequency can help.
 
 3. **Disable GPU metrics:**
-   GPU polling is the most likely culprit for random crashes. Try:
-   ```bash
-   ollamamon config set enable-gpu-metrics false
-   ```
+   GPU polling is the most likely culprit for random crashes. Try setting
+   `enableGpuMetrics` to `false` in `settings.json`.
 
 4. **Check event viewer:**
    - Press Win+R, type `eventvwr.msc`
@@ -391,4 +382,4 @@ If this fails, update your NVIDIA drivers.
 
 ---
 
-**Questions?** See the [FAQ in README](../README.md) or [Development Guide](development-guide.md).
+**Questions?** See the [README](../README.md) or [Development Guide](development-guide.md).

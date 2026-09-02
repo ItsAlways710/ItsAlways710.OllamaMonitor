@@ -13,10 +13,10 @@
     <Title>ItsAlways710.OllamaMonitor</Title>
     <AssemblyTitle>ItsAlways710.OllamaMonitor</AssemblyTitle>
     <Product>ItsAlways710.OllamaMonitor</Product>
-    <Description>Windows-first Ollama monitor with tray status, diagnostics, and CLI configuration commands. Fork of ElBruno.OllamaMonitor by Bruno Capuano.</Description>
+    <Description>Windows-first Ollama monitor with live context tracking, real-time system and Ollama process metrics, themed windows, and configuration CLI. Built on the foundation of ElBruno.OllamaMonitor by Bruno Capuano.</Description>
     <Authors>ItsAlways710, Bruno Capuano (original)</Authors>
     <Company>ItsAlways710</Company>
-    <Version>0.9.0</Version>
+    <Version>0.13.0</Version>
     <DebugType>embedded</DebugType>
     <IsPackable>true</IsPackable>
   </PropertyGroup>

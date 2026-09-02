@@ -1,7 +1,7 @@
 # Windows Notifications Feature - Implementation Summary
 
 ## Overview
-Added comprehensive Windows notification support to ElBruno.OllamaMonitor, allowing users to receive desktop notifications for various Ollama events and resource alerts.
+Added comprehensive Windows notification support to ItsAlways710.OllamaMonitor, allowing users to receive desktop notifications for various Ollama events and resource alerts.
 
 ## Features Implemented
 
@@ -10,9 +10,10 @@ Added comprehensive Windows notification support to ElBruno.OllamaMonitor, allow
 - `OllamaOnline` - When Ollama comes back online
 - `ModelLoaded` - When a model is loaded
 - `ModelUnloaded` - When a model is unloaded
-- `HighCpuUsage` - When CPU usage exceeds threshold
-- `HighMemoryUsage` - When memory usage exceeds threshold
-- `HighGpuUsage` - When GPU usage exceeds threshold
+- `ModelOperationSucceeded` - When a model operation (stop/pull/remove/copy) succeeds
+- `ModelOperationFailed` - When a model operation (stop/pull/remove/copy) fails
+- `OllamaStarted` - When an Ollama daemon start is requested
+- `HighCpuUsage` / `HighMemoryUsage` / `HighGpuUsage` - When resource usage exceeds thresholds
 
 ### 2. **Core Components**
 
@@ -37,7 +38,7 @@ void SetDebounceSeconds(int seconds)
 
 #### Enhanced Configuration (`Configuration/AppSettings.cs`)
 - `EnableNotifications` - Global toggle for all notifications (default: true)
-- `NotificationEvents` - Bitmask of event types to notify (default: OllamaOffline | OllamaOnline)
+- `NotificationEvents` - Bitmask of event types to notify (default: OllamaOffline | OllamaOnline | ModelLoaded | ModelUnloaded | ModelOperationFailed)
 - `NotificationDebounceSeconds` - Debounce interval (default: 30 seconds)
 
 #### Settings Window (`SettingsWindow.xaml` + `ViewModels/SettingsWindowViewModel.cs`)
@@ -93,10 +94,9 @@ Time: 31s   - Same event triggered → Notification shown, last_notification_tim
 ## Configuration
 
 ### Enable/Disable Notifications
-Notifications can be disabled globally in Settings or via CLI:
-```bash
-ollamamon config --set-notifications false
-```
+Notifications can be disabled globally in the Settings window, or by setting
+`"enableNotifications": false` in `settings.json`. The CLI does not manage this key
+(`config set` only supports `endpoint` and `refresh-interval`).
 
 ### Select Event Types
 Each event type has its own checkbox in Settings UI:
@@ -113,14 +113,14 @@ Slider in Settings (5-300 seconds):
 
 **Out of the box:**
 - ✅ Notifications enabled
-- ✅ Only critical events (Ollama offline/online)
+- ✅ Ollama offline/online, model loaded/unloaded, and model-operation-failure events enabled by default
 - ✅ 30-second debounce prevents spam
 - ✅ Can disable any event type in Settings
 
-**First-time users see:**
+**First-time users experience:**
 1. Ollama goes offline → 🔴 "Ollama Offline" notification
-2. Settings → Select which events to monitor
-3. Save → Settings persist to disk
+2. Settings → Notifications → select which events to monitor
+3. Save → settings persist to disk and apply on the next refresh cycle
 4. Notifications adapt to preferences
 
 ---

@@ -1,6 +1,6 @@
 # ItsAlways710.OllamaMonitor Documentation
 
-Welcome to the ItsAlways710.OllamaMonitor documentation hub — a fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by Bruno Capuano.
+Welcome to the ItsAlways710.OllamaMonitor documentation hub. The project started as a fork of [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor) by Bruno Capuano and has grown into its own project on that foundation.
 
 ## 🌐 Landing Page
 
@@ -36,10 +36,11 @@ Looking for social media posts, blog content, or image prompts?
 
 ## 🔗 Quick Links
 
-- **GitHub**: https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor (fork of [elbruno/ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor))
+- **GitHub**: https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor
 - **NuGet Package**: https://www.nuget.org/packages/ItsAlways710.OllamaMonitor
 - **Ollama**: https://ollama.ai
-- **Author**: https://github.com/elbruno
+- **Maintainer**: https://github.com/ItsAlways710
+- **Foundation**: https://github.com/elbruno (original [ElBruno.OllamaMonitor](https://github.com/elbruno/ElBruno.OllamaMonitor))
 
 ## ❓ Need Help?
 

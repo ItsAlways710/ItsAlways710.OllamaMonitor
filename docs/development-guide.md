@@ -75,46 +75,83 @@ dotnet run --project src/ItsAlways710.OllamaMonitor/ -- config reset
 src/ItsAlways710.OllamaMonitor/
 ├── Cli/
 │   ├── CliCommand.cs              # Command model
-│   ├── CliCommandKind.cs          # Command types enum
+│   ├── CliCommandKind.cs          # Command kinds enum
 │   ├── CliCommandParser.cs        # Parse command-line args
-│   └── CliCommandRunner.cs        # Execute commands
+│   └── CliCommandRunner.cs        # Execute commands (help, config, reset)
 ├── Configuration/
 │   ├── AppSettings.cs             # Settings model (JSON-serializable)
-│   └── AppSettingsService.cs      # Load/save settings file
+│   ├── AppSettingsService.cs      # Load/save settings file
+│   ├── ModelUnloadStrategy.cs     # Auto / Cli / Api strategy
+│   └── SettingsValidator.cs       # Shared CLI + Settings UI validation
 ├── Diagnostics/
-│   ├── DiagnosticsLogService.cs   # Event logging
-│   ├── StatusFormatter.cs         # Format snapshots as text
-│   └── ClipboardService.cs        # Copy to clipboard
+│   └── DiagnosticsLogService.cs   # Event + verbose logging
 ├── Helpers/
+│   ├── BoolToColorConverter.cs    # WPF value converter
 │   ├── ProcessLauncher.cs         # Launch URLs / processes
-│   └── AppPaths.cs                # Config/log paths
+│   ├── SnapshotFormatter.cs       # Format snapshots as text
+│   └── StatusTextHelper.cs        # Status line / tooltip formatting
 ├── Interop/
-│   └── ...                        # Windows P/Invoke helpers
+│   ├── ConsoleManager.cs          # Console attach for tool output
+│   ├── NativeMethods.cs           # P/Invoke declarations
+│   ├── RefWindowForensics.cs      # Topmost-guard forensics capture
+│   ├── TopmostGuardPolicy.cs      # WndProc demotion policy
+│   └── WindowInterop.cs           # Window message hooks
 ├── Models/
-│   ├── OllamaMonitorState.cs      # State enum (Gray/Green/Blue/Orange/Red)
+│   ├── ContextWindowSample.cs     # Per-task context sample
+│   ├── MiniContextLine.cs         # Fitted mini monitor context line
+│   ├── NotificationEventType.cs   # Notification event flags
+│   ├── OllamaMonitorState.cs      # State enum (NotReachable → Error)
 │   ├── OllamaMonitorSnapshot.cs   # Aggregated status
 │   ├── OllamaModelSnapshot.cs     # Model info
 │   └── ResourceSnapshot.cs        # CPU/RAM/GPU metrics
 ├── Ollama/
+│   ├── OllamaApiCallResult.cs     # Typed result wrapper
 │   ├── OllamaClient.cs            # HTTP client for Ollama API
-│   ├── OllamaStatusService.cs     # Aggregate Ollama state
-│   ├── OllamaStatus.cs            # API response models
-│   └── OllamaModelInfo.cs         # Model info models
+│   ├── OllamaModelStore.cs        # Model identity tracking
+│   └── Contracts/                 # API response models
 ├── Services/
-│   ├── ProcessMetricsService.cs   # CPU/RAM metrics
+│   ├── AutoLaunchService.cs       # Launch-at-sign-in Run-key registration
+│   ├── ContextTrackingService.cs  # Live context tracking + attribution
+│   ├── GpuUsageGraph.cs           # Mini monitor GPU sparkline
+│   ├── IOllamaCliService.cs       # CLI abstraction
+│   ├── IOllamaLogService.cs       # Log tailing abstraction
 │   ├── NvidiaSmiMetricsService.cs # GPU metrics
-│   ├── OllamaCliService.cs        # Local ollama CLI integration (ps/stop/pull/rm/cp/serve)
-│   ├── TrayIconService.cs         # System tray lifecycle
-│   ├── TrayStatusMapper.cs        # Map state to icon color
-│   └── TrayMenuBuilder.cs         # Build context menu
+│   ├── OllamaCliService.cs        # Local ollama CLI (ps/stop/pull/rm/serve)
+│   ├── OllamaLogService.cs        # Log source: redirect or file tail
+│   ├── OllamaStatusService.cs     # Aggregate Ollama state
+│   ├── OsMetricsService.cs        # System-wide CPU/memory (kernel32)
+│   ├── ProcessMetricsService.cs   # Per-process CPU/RAM/disk I/O
+│   ├── ThemeService.cs            # Dark/light/system themes
+│   ├── TrayIconService.cs         # System tray lifecycle and menu
+│   └── WindowsNotificationService.cs # Toast notifications
 ├── ViewModels/
-│   └── MainWindowViewModel.cs     # UI state and logic
+│   ├── AsyncRelayCommand.cs / RelayCommand.cs / ViewModelBase.cs
+│   ├── MainWindowViewModel.cs     # Shared UI state, refresh loop
+│   └── SettingsWindowViewModel.cs # Settings dialog state
+├── AppPaths.cs                    # Config/log paths
 ├── App.xaml / App.xaml.cs         # WPF Application entry
-└── MainWindow.xaml / MainWindow.xaml.cs  # Floating details window
+├── MainWindow.xaml / .cs          # Details window
+├── MiniMonitorWindow.xaml / .cs   # Compact always-on-top monitor
+├── SettingsWindow.xaml / .cs      # Settings dialog
+├── Resources/                     # Theme resource dictionaries
+└── Assets/TrayIcons/              # State icons (gray/green/blue/orange/red)
 
-tests/ItsAlways710.OllamaMonitor.Tests/
-├── OllamaStatusServiceTests.cs    # Unload strategy + fallback behavior
-└── AppSettingsTests.cs            # New defaults (unload strategy, notifications)
+tests/ItsAlways710.OllamaMonitor.Tests/   (141 tests)
+├── AppSettingsTests.cs                        # Defaults + deserialization
+├── AutoLaunchServiceTests.cs                  # Run-key registration
+├── CompactGpuSummaryTests.cs                  # GPU text fitting
+├── ContextTrackingServiceTests.cs             # Token/slot parsing
+├── ContextTrackingServiceAttributionTests.cs  # Runner→model attribution
+├── DiagnosticsLogServiceTests.cs              # Verbose gate contract
+├── MiniMonitorPositionTests.cs                # Position persistence
+├── OllamaLogServiceTests.cs                   # Hybrid log source
+├── OllamaModelStoreTests.cs                   # Model identity tracking
+├── OllamaStatusServiceTests.cs                # Unload strategy + fallback
+├── OsMetricsServiceTests.cs                   # System-wide metrics
+├── RealStoreAttributionTests.cs               # Attribution against a real log line
+├── RefWindowForensicsTests.cs                 # Identity capture
+├── StatusTextHelperTests.cs                   # Status line formatting
+└── TopmostGuardPolicyTests.cs                 # Demotion policy
 ```
 
 ## Key Development Areas
@@ -256,11 +293,18 @@ Run all tests:
 dotnet test ItsAlways710.OllamaMonitor.sln
 ```
 
-Current automated coverage includes:
-- unload strategy behavior (`Auto`, `Cli`, remote/local gating)
-- CLI-stop/API-fallback behavior
-- running-model lookup strategy
-- default settings checks for new feature flags
+Current automated coverage includes (141 tests):
+- Context tracking: token/slot parsing, runner→model attribution (incl. a real Ollama log line)
+- Ollama model store and running-model lookup strategy
+- Unload strategy behavior (`Auto`, `Cli`, remote/local gating) + stop validation
+- Ollama log service (hybrid source selection, log tailing)
+- Diagnostics logging (verbose gate contract)
+- Auto-launch (Run-key registration)
+- Mini monitor position persistence
+- System-wide metrics (OsMetrics)
+- Topmost guard policy and reference window forensics
+- Status line and snapshot formatting
+- Settings defaults and deserialization
 
 ## Common Development Tasks
 
@@ -302,28 +346,24 @@ The app should update within the refresh interval.
 
 ## Packaging for Distribution
 
-### Build Release Version
-
-```bash
-dotnet build -c Release
-```
-
 ### Create NuGet Package
 
-The `.csproj` is configured with `<PackAsTool>true</PackAsTool>`, so you can pack it:
+Use the publish script; it packs the tool, builds the desktop payload, and injects it
+into the package:
 
-```bash
-dotnet pack -c Release
+```powershell
+pwsh .\build\Pack-Tool.ps1 -Configuration Release
 ```
 
-This creates a `.nupkg` file in the `bin/Release/` folder.
+The package lands in `artifacts\packages\` and the desktop payload in
+`artifacts\desktop-publish\`.
 
 ### Publish to NuGet
 
-(Requires NuGet API key and publishing rights)
+(Requires a NuGet API key and publishing rights — see [Publishing Guide](publishing.md))
 
 ```bash
-dotnet nuget push bin/Release/ItsAlways710.OllamaMonitor.0.1.0.nupkg --api-key <your-api-key> --source https://api.nuget.org/v3/index.json
+dotnet nuget push artifacts/packages/ItsAlways710.OllamaMonitor.0.13.0.nupkg --api-key <your-api-key> --source https://api.nuget.org/v3/index.json
 ```
 
 Once published, users can install via:
@@ -348,12 +388,11 @@ For a detailed understanding of how the app is structured, see [Architecture Gui
 
 ### Build fails with "System.Windows" errors
 
-Ensure you have the Windows desktop development workload installed:
-```bash
-dotnet workload install wafxaml
-```
+Ensure the .NET 10 SDK with the **.NET desktop development** workload is installed
+(`global.json` pins 10.0.203 with `rollForward: latestFeature`):
 
-Or install Visual Studio with ".NET desktop development" workload.
+- Visual Studio 2026, or VS 2022 with the ".NET desktop development" workload added
+- Or: `dotnet --list-sdks` should show a 10.0.x SDK
 
 ### TrayIcon doesn't appear
 

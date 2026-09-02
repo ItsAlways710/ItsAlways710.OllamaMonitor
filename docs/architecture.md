@@ -2,56 +2,81 @@
 
 ## Overview
 
-ItsAlways710.OllamaMonitor is a .NET WPF desktop application built for Windows with a system tray interface, a standard details window, and a compact always-on-top mini monitor.
+ItsAlways710.OllamaMonitor is a .NET WPF desktop application built for Windows with a system tray interface, a standard details window, a compact always-on-top mini monitor, and a settings dialog.
 
-The architecture is split into two tracks:
+The architecture is split into two layers:
 
-- **Platform Layer (Tank)** — HTTP client, Ollama API integration, process metrics, CLI commands, configuration
-- **Desktop Layer (Trinity)** — WPF UI, system tray integration, visual state management, window lifecycle
+- **Core** — HTTP client and Ollama API integration, per-process and system-wide metrics, live context tracking, server-log tailing, notifications, CLI, and configuration
+- **UI layer** — WPF windows (details, mini monitor, settings), system tray integration, theming, and visual state management
 
 ## Project Structure
 
 ```
 src/ItsAlways710.OllamaMonitor/
 ├── Cli/
-│   ├── CliCommand.cs              # Command model
-│   ├── CliCommandKind.cs          # Command type enum
-│   ├── CliCommandParser.cs        # Parse args -> CliCommand
-│   └── CliCommandRunner.cs        # Execute commands (help, config, reset, etc.)
+│   ├── CliCommand.cs                # Command model
+│   ├── CliCommandKind.cs            # Command type enum
+│   ├── CliCommandParser.cs          # Parse args → CliCommand
+│   └── CliCommandRunner.cs          # Execute commands (help, config, reset)
 ├── Configuration/
-│   ├── AppSettings.cs             # Settings data model (JSON-serializable)
-│   └── AppSettingsService.cs      # Load/save settings from disk
+│   ├── AppSettings.cs               # Settings data model (JSON-serializable)
+│   ├── AppSettingsService.cs        # Load/save settings from disk
+│   ├── ModelUnloadStrategy.cs       # Auto / Cli / Api unload strategy
+│   └── SettingsValidator.cs         # Shared validation for CLI and Settings UI
 ├── Diagnostics/
-│   ├── StatusFormatter.cs         # Format snapshots as readable text
-│   ├── ClipboardService.cs        # Copy diagnostics to clipboard
-│   └── DiagnosticsLogService.cs   # Event logging
+│   └── DiagnosticsLogService.cs     # Event logging + gated [VERBOSE] logging
 ├── Helpers/
-│   ├── ProcessLauncher.cs         # Launch URLs / external commands
-│   └── ...
+│   ├── BoolToColorConverter.cs      # WPF value converter
+│   ├── ProcessLauncher.cs           # Launch URLs / external processes
+│   ├── SnapshotFormatter.cs         # Format snapshots as copyable text
+│   └── StatusTextHelper.cs          # Status line / tray tooltip formatting
 ├── Interop/
-│   └── ...                        # P/Invoke / Windows interop
+│   ├── ConsoleManager.cs            # Console attach for PackAsTool output
+│   ├── NativeMethods.cs             # P/Invoke declarations
+│   ├── RefWindowForensics.cs        # Topmost-guard forensic identity capture
+│   ├── TopmostGuardPolicy.cs        # WndProc hook policy for the topmost guard
+│   └── WindowInterop.cs             # Window message hooks
 ├── Models/
-│   ├── OllamaMonitorState.cs      # State enum (Gray, Green, Blue, Orange, Red)
-│   ├── OllamaMonitorSnapshot.cs   # Aggregated status snapshot
-│   ├── OllamaModelSnapshot.cs     # Model info
-│   └── ResourceSnapshot.cs        # CPU, RAM, GPU metrics
+│   ├── ContextWindowSample.cs       # Per-task context-window sample
+│   ├── MiniContextLine.cs           # Context line fitted to mini monitor width
+│   ├── NotificationEventType.cs     # Notification event flags
+│   ├── OllamaMonitorSnapshot.cs     # Aggregated status snapshot
+│   ├── OllamaModelSnapshot.cs       # Model info
+│   ├── OllamaMonitorState.cs        # State enum (NotReachable → Error)
+│   └── ResourceSnapshot.cs          # CPU, RAM, GPU metrics
 ├── Ollama/
-│   ├── OllamaClient.cs            # HTTP client for Ollama API
-│   ├── OllamaStatusService.cs     # Aggregate Ollama state
-│   ├── OllamaStatus.cs            # API response models
-│   └── OllamaModelInfo.cs         # Model details
+│   ├── OllamaApiCallResult.cs       # Typed result wrapper
+│   ├── OllamaClient.cs              # HTTP client for the Ollama API
+│   ├── OllamaModelStore.cs          # Model identity tracking
+│   └── Contracts/                   # API response models (version, tags, ps, …)
+├── Resources/
+│   ├── ThemesDark.xaml              # Dark theme resource dictionary
+│   └── ThemesLight.xaml             # Light theme resource dictionary
 ├── Services/
-│   ├── ProcessMetricsService.cs   # CPU, RAM from Ollama process
-│   ├── NvidiaSmiMetricsService.cs # GPU metrics via nvidia-smi
-│   ├── OllamaCliService.cs        # Local ollama CLI integration (ps/stop/pull/rm/cp/serve)
-│   ├── TrayIconService.cs         # System tray lifecycle
-│   ├── TrayStatusMapper.cs        # OllamaMonitorState -> icon color
-│   └── TrayMenuBuilder.cs         # Context menu construction
+│   ├── AutoLaunchService.cs         # Launch-at-sign-in Run-key registration
+│   ├── ContextTrackingService.cs    # Live context-window tracking + attribution
+│   ├── GpuUsageGraph.cs             # Mini monitor GPU sparkline
+│   ├── IOllamaCliService.cs         # Local ollama CLI abstraction
+│   ├── IOllamaLogService.cs         # Server-log tailing abstraction
+│   ├── NvidiaSmiMetricsService.cs   # GPU metrics via nvidia-smi
+│   ├── OllamaCliService.cs          # ps/stop/pull/rm/serve via the ollama CLI
+│   ├── OllamaLogService.cs          # Log source: process redirect or file tail
+│   ├── OllamaStatusService.cs       # Aggregate Ollama state
+│   ├── OsMetricsService.cs          # System-wide CPU/memory via kernel32
+│   ├── ProcessMetricsService.cs     # Per-process CPU/RAM/disk I/O
+│   ├── ThemeService.cs              # Dark/light/system theme resolution
+│   ├── TrayIconService.cs           # System tray lifecycle and menu
+│   └── WindowsNotificationService.cs # Windows toast notifications
 ├── ViewModels/
-│   └── MainWindowViewModel.cs     # UI state, refresh logic
-├── App.xaml / App.xaml.cs         # WPF Application entry point
-├── MainWindow.xaml / MainWindow.xaml.cs      # Standard details window
-└── MiniMonitorWindow.xaml / .cs              # Compact always-on-top monitor
+│   ├── AsyncRelayCommand.cs / RelayCommand.cs / ViewModelBase.cs
+│   ├── MainWindowViewModel.cs       # Shared UI state, refresh loop, model actions
+│   └── SettingsWindowViewModel.cs   # Settings dialog state
+├── AppPaths.cs                      # Settings/log path constants
+├── App.xaml / App.xaml.cs           # WPF Application entry point
+├── MainWindow.xaml / MainWindow.xaml.cs      # Details window
+├── MiniMonitorWindow.xaml / MiniMonitorWindow.xaml.cs  # Compact always-on-top monitor
+├── SettingsWindow.xaml / SettingsWindow.xaml.cs        # Settings dialog
+└── Assets/TrayIcons/                # State icon assets (gray/green/blue/orange/red)
 ```
 
 ## Command Flow
@@ -91,15 +116,19 @@ Every **N seconds** (default 2, configurable):
 ```
 DispatcherTimer.Tick
   └─ MainWindowViewModel.RefreshAsync()
-      └─ OllamaStatusService.GetStatusAsync()
-          ├─ OllamaClient.GetVersionAsync()
-          ├─ OllamaClient.GetTagsAsync()
-          ├─ OllamaClient.GetProcessesAsync()
-          ├─ ProcessMetricsService.GetMetricsAsync()
-          └─ NvidiaSmiMetricsService.GetGpuMetricsAsync()
-      └─ Determine OllamaMonitorState (Gray/Green/Blue/Orange/Red)
-      └─ Update UI bindings
-      └─ Update tray icon color (TrayStatusMapper)
+      ├─ Reload settings from disk (changes apply live — no restart)
+      ├─ OllamaStatusService.GetStatusAsync()
+      │   ├─ OllamaClient.GetVersionAsync()
+      │   ├─ OllamaClient.GetRunningModelsAsync()
+      │   ├─ OllamaClient.GetTagsAsync()
+      │   ├─ ProcessMetricsService.GetMetricsAsync()    (per llama-server, summed)
+      │   ├─ NvidiaSmiMetricsService.GetGpuMetricsAsync()
+      │   └─ OsMetricsService.GetMetricsAsync()         (system-wide CPU/memory)
+      ├─ Context tracking state (from server-log tail via OllamaLogService)
+      ├─ Determine OllamaMonitorState (Gray/Green/Blue/Orange/Red)
+      ├─ Raise notification events (state changes, model load/unload, thresholds)
+      ├─ Update UI bindings
+      └─ Update tray icon (TrayIconService)
 ```
 
 ## State Model
@@ -142,23 +171,35 @@ Settings are stored as JSON at:
 
 Editable via:
 
-- Direct file edit
-- CLI: `ollamamon config set <key> <value>`
-- Settings dialog (Phase 2)
+- Direct file edit (a running app re-reads the file on every refresh cycle)
+- CLI: `ollamamon config set endpoint <url>` and `ollamamon config set refresh-interval <seconds>`
+- Settings window (tray menu → **Settings…**): notifications, general toggles, and mini monitor display
 
-Key settings:
+All settings:
 
 | Key | Type | Default | Purpose |
 |-----|------|---------|---------|
 | `endpoint` | string | `http://localhost:11434` | Ollama API endpoint |
+| `unloadStrategy` | enum | `0` (Auto) | Model unload strategy: Auto / Cli / Api |
 | `refreshIntervalSeconds` | int | `2` | Polling interval |
-| `launchAtWindowsStartup` | bool (UI) | Off | Launch at sign-in via HKCU Run key (Settings → General; not stored in settings.json) |
 | `showFloatingWindowOnStart` | bool | `false` | Show the mini monitor on startup |
 | `enableGpuMetrics` | bool | `true` | Include GPU metrics |
 | `enableDiskMetrics` | bool | `true` | Include disk I/O metrics |
 | `highCpuThresholdPercent` | double | `80` | CPU% to trigger HighUsage state |
 | `highMemoryThresholdGb` | double | `16` | RAM GB to trigger HighUsage state |
 | `highGpuThresholdPercent` | double | `85` | GPU% to trigger HighUsage state |
+| `enableVerboseLogging` | bool | `false` | Gate detailed `[VERBOSE]` diagnostic log lines |
+| `enableNotifications` | bool | `true` | Master toggle for Windows notifications |
+| `notificationEvents` | flags | `271` | Which events notify |
+| `notificationDebounceSeconds` | int | `30` | Minimum interval between repeat notifications |
+| `showCpuInMiniMonitor` | bool | `false` | Show CPU in the mini monitor |
+| `showMemoryInMiniMonitor` | bool | `false` | Show memory in the mini monitor |
+| `showContextInMiniMonitor` | bool | `false` | Show the live context-usage line |
+| `showOllamaLogsInMiniMonitor` | bool | `false` | Show the collapsible Ollama logs panel |
+| `miniMonitorLeft` / `miniMonitorTop` | double? | (omitted) | Last saved mini monitor position |
+
+`launchAtWindowsStartup` is separate: the HKCU Run-key entry itself is the setting
+(Settings → General), so it never appears in `settings.json`.
 
 ## Key Classes
 
@@ -224,13 +265,40 @@ Registers/removes the app at Windows sign-in via the per-user Run key
 - `IsEnabled()` compares the stored command against the current executable path, so a stale entry reads as off
 - Apply/remove logic is isolated behind `IStartupRegistryStore`, which `RunKeyRegistryStore` implements
 
+### ContextTrackingService
+
+Tracks live context-window usage per concurrent task from Ollama server log lines,
+fed via `OllamaLogService.LogLineReceived`. Parses the
+`n_ctx_slot` / `task.n_tokens` / `tg` slot lines (per-task tokens used, slot size,
+tokens/second) and the `starting llama-server` model-load line for runner-to-model
+attribution (model digest + runner port).
+
+### OllamaLogService
+
+Provides Ollama server log text from a hybrid source:
+- App launched Ollama → captures the `ollama serve` stdout/stderr redirection
+- Ollama was already running → tails the newest of the known log files
+  (`%USERPROFILE%\.ollama\logs\server.log`, `%LOCALAPPDATA%\Ollama\server.log`)
+
+Feeds the mini monitor logs panel and `ContextTrackingService`.
+
+### ThemeService
+
+Resolves the active theme (Dark / Light / System) and applies the matching resource
+dictionary (`Resources/ThemesDark.xaml` / `ThemesLight.xaml`).
+
+### WindowsNotificationService
+
+Sends Windows toast notifications for the configured `NotificationEventType` events,
+with per-type debouncing.
+
 ### TrayIconService
 
 Manages system tray lifecycle, context menu, and state-driven icon updates.
 
-- Shows/hides the details window and mini monitor
-- Provides "Copy diagnostics", "Open Ollama URL", "Exit" menu items
-- Updates icon color based on `OllamaMonitorState`
+- Menu: Show Details, Show Mini Monitor, Settings…, Refresh, Copy Status, Open Ollama API, Open Config Folder, Visit HomePage, Exit
+- Double-click on the tray icon opens the mini monitor
+- Updates the tray icon based on `OllamaMonitorState` (Assets/TrayIcons, `SystemIcons` fallback)
 
 ### MainWindowViewModel
 
@@ -279,7 +347,7 @@ dotnet tool install --global ItsAlways710.OllamaMonitor
 
 This places the executable in the user's PATH and creates the `ollamamon` command.
 
-## Testing Checklist (Phase 1)
+## Manual Verification Checklist
 
 - [ ] Build succeeds with `dotnet build`
 - [ ] App launches to tray
@@ -297,11 +365,18 @@ This places the executable in the user's PATH and creates the `ollamamon` comman
 
 ## Automated Tests
 
-The solution now includes `tests/ItsAlways710.OllamaMonitor.Tests` with coverage for:
-- unload strategy behavior (`Auto`, `Cli`, remote/local gating)
-- CLI stop + API fallback behavior
-- running model lookup strategy
-- new settings defaults for feature flags
+The solution includes `tests/ItsAlways710.OllamaMonitor.Tests` (141 tests) covering:
+- Context tracking: token parsing, slot/task attribution, model attribution from real log lines
+- Ollama model store and running-model lookup strategy
+- Unload strategy behavior (`Auto`, `Cli`, remote/local gating) + stop validation
+- Ollama log service (hybrid source selection, log tailing)
+- Diagnostics logging (verbose gate contract, INFO/WARN always written)
+- Auto-launch (Run-key registration)
+- Mini monitor position persistence
+- System-wide metrics (OsMetrics)
+- Topmost guard policy and reference window forensics
+- Status line and snapshot formatting
+- Settings defaults and deserialization
 
 Run tests with:
 
@@ -309,6 +384,3 @@ Run tests with:
 dotnet test ItsAlways710.OllamaMonitor.sln
 ```
 
----
-
-**Next Phase (Phase 2):** additional UI-level tests and historical charts.

@@ -2,6 +2,17 @@
 
 ## Version History
 
+### 0.13.0 — Version Sync and Documentation Pass
+
+**Release Date:** 2026-09-02
+
+#### What's Changed
+
+- ✅ **Version display fix** — the app version shown in the Details and Mini Monitor windows was out of sync with the packaged version (UI showed v0.9.0 while the tool package carried 0.10.0); the UI string and both project versions are now unified at 0.13.0
+- ✅ **Documentation accuracy pass** — corrected CLI command examples to match the commands the CLI actually supports, fixed "restart required" statements (settings apply live on the next refresh cycle), updated the project trees and test coverage lists in the architecture/development guides, and updated project positioning across the README, landing page, and package metadata to present this as its own project built on ElBruno's original
+
+---
+
 ### 0.12.0 — Verbose/Debug Logging Toggle
 
 **Release Date:** 2026-09-02
@@ -40,14 +51,17 @@ This release fixes the scrollbar placement in the Details window so the vertical
 ---
 
 
+### 0.11.0 — Launch at Windows Startup and System-wide Metrics
+
 **Release Date:** 2026-08-31
 
-This release adds a Windows sign-in autostart toggle and system-wide CPU/memory usage alongside the Ollama process metrics.
+This release adds a Windows sign-in autostart toggle and system-wide CPU/memory usage alongside the Ollama process metrics, and adds live context-window tracking to the Mini Monitor.
 
 #### What's New
 
 - ✅ **Launch at Windows Startup** setting (Settings → General, off by default) — registers the app under the per-user Run key (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`); the registry entry is the setting, so the checkbox always reflects the actual registration state
 - ✅ **System-wide CPU% and Memory%** on the CPU and Memory lines in the Details window and the Mini Monitor (e.g. `CPU: 8.4% (Ollama) | 12% (System)`, `Memory: 58.1 MB (Ollama) | 42% (System)`)
+- ✅ **Live context-window tracking** — optional "Context" line in the Mini Monitor (off by default) parsed from the Ollama server log: per-task tokens used, slot size, percentage, and tokens/second, with runner-to-model attribution from the model-load line
 - ✅ System metrics sampled with native kernel32 calls (`GetSystemTimes` CPU delta, `GlobalMemoryStatusEx` memory), no new dependencies
 
 #### Notes
@@ -332,12 +346,16 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 | Version | Release | Status | End of Support |
 |---------|---------|--------|-----------------|
-| 0.10.0  | 2026-06-28 | Active | TBD |
+| 0.13.0  | 2026-09-02 | Active | TBD |
+| 0.12.0  | 2026-09-02 | Shipped | TBD |
+| 0.11.1  | 2026-08-31 | Shipped | TBD |
+| 0.11.0  | 2026-08-31 | Shipped | TBD |
+| 0.10.0  | 2026-06-28 | Shipped | TBD |
 | 0.8.1   | 2026-05-19 | Shipped | TBD |
+| 0.7.0   | 2026-04-27 | Shipped | TBD |
 | 0.6.0   | 2026-04-25 | Shipped | TBD |
 | 0.5.0   | 2026-04-24 | Shipped | TBD |
 | 0.1.0   | 2026-04-24 | Shipped | TBD |
-| 0.2.0   | TBD | Planned | — |
 | 1.0.0   | TBD    | Planned | — |
 
 ---
@@ -346,7 +364,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 See [LICENSE](../LICENSE) for terms.
 
-Built by the El Bruno team.
+Built and maintained by [ItsAlways710](https://github.com/ItsAlways710), on the foundation of ElBruno.OllamaMonitor by Bruno Capuano (El Bruno).
 
 ---
 

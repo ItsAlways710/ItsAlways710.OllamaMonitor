@@ -311,7 +311,7 @@ ollamamon config reset
 
 3. Save the file
 
-4. Restart the application for changes to take effect
+4. The running app picks up the change on its next refresh cycle (no restart needed)
 
 **Example:**
 ```json
@@ -357,11 +357,11 @@ ollamamon config reset
 
 This recreates the file with default values.
 
-### Changes don't take effect immediately
+### When changes take effect
 
-Configuration changes require an app restart. Either:
-- Close the app from the tray menu
-- Run `ollamamon` again to launch a fresh instance
+The running app reloads `settings.json` on every refresh cycle (default: every 2 seconds),
+so changes made while the app runs apply on the next refresh — no restart needed.
+If the app is not running, the new values simply take effect at the next launch.
 
 ### "Endpoint unreachable" message
 
@@ -379,11 +379,8 @@ This is normal if:
 - `nvidia-smi` is not installed or not on PATH
 - GPU metrics are disabled in settings
 
-To enable GPU metrics:
-
-```bash
-ollamamon config set gpu-metrics true
-```
+To enable GPU metrics, set `"enableGpuMetrics": true` in `settings.json`
+(the app picks it up on the next refresh cycle).
 
 Then verify `nvidia-smi` is available:
 

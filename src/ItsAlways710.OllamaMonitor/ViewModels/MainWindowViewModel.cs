@@ -27,7 +27,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private string _stateForeground = "White";
     private string _endpoint = "http://localhost:11434";
     private string _versionText = "Version: Unavailable";
-    private string _appVersionText = "v0.9.0";
+    private string _appVersionText = "v0.13.0";
     private string _lastCheckedText = "Not checked yet";
     private string _apiReachableText = "API Reachable: Unknown";
     private string _processStatusText = "Process: Detecting";

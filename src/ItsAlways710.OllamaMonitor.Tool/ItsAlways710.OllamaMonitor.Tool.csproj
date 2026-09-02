@@ -12,7 +12,7 @@
     <Title>ItsAlways710.OllamaMonitor</Title>
     <AssemblyTitle>ItsAlways710.OllamaMonitor</AssemblyTitle>
     <Product>ItsAlways710.OllamaMonitor</Product>
-    <Description>Windows-first Ollama monitor global tool launcher and configuration CLI. Fork of ElBruno.OllamaMonitor by Bruno Capuano.</Description>
+    <Description>Global tool launcher and headless configuration CLI for ItsAlways710.OllamaMonitor. See what your local Ollama is doing while keeping it in the tray. Built on the foundation of ElBruno.OllamaMonitor by Bruno Capuano.</Description>
     <Authors>ItsAlways710, Bruno Capuano (original)</Authors>
     <Company>ItsAlways710</Company>
     <PackageTags>ollama;monitoring;dotnet-tool;windows</PackageTags>
@@ -25,7 +25,7 @@
     <RepositoryUrl>https://github.com/ItsAlways710/ItsAlways710.OllamaMonitor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <Version>0.10.0</Version>
+    <Version>0.13.0</Version>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
